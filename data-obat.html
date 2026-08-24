@@ -34,249 +34,165 @@
 
   /* ---------- Sidebar ---------- */
   .sidebar{
-    width:260px;
-    flex-shrink:0;
-    background:var(--panel);
-    border-right:1px solid var(--border);
-    padding:24px 16px;
-    display:flex;
-    flex-direction:column;
-    gap:24px;
+    width:260px;flex-shrink:0;background:var(--panel);
+    border-right:1px solid var(--border);padding:24px 16px;
+    display:flex;flex-direction:column;gap:24px;
   }
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-size:20px;
-    font-weight:700;
-    padding:0 8px;
-  }
-  .brand-icon{
-    width:32px;height:32px;
-    border-radius:8px;
-    background:var(--green-soft);
-    color:var(--green);
-    display:flex;align-items:center;justify-content:center;
-    font-size:18px;
-  }
-  .menu-label{
-    font-size:11px;
-    letter-spacing:.08em;
-    color:var(--text-faint);
-    text-transform:uppercase;
-    padding:0 12px;
-    margin-bottom:8px;
-  }
+  .brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;padding:0 8px;}
+  .brand-icon{width:32px;height:32px;border-radius:8px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .menu-label{font-size:11px;letter-spacing:.08em;color:var(--text-faint);text-transform:uppercase;padding:0 12px;margin-bottom:8px;}
   nav ul{list-style:none;display:flex;flex-direction:column;gap:2px;}
-  nav a{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:10px 12px;
-    border-radius:8px;
-    color:var(--text-dim);
-    text-decoration:none;
-    font-size:14px;
-    font-weight:500;
-    transition:background .15s, color .15s;
-  }
+  nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:var(--text-dim);text-decoration:none;font-size:14px;font-weight:500;transition:background .15s, color .15s;}
   nav a:hover{background:var(--panel-2);color:var(--text);}
   nav a.active{background:var(--green-soft);color:var(--green);}
   nav a svg{width:18px;height:18px;flex-shrink:0;}
 
   /* ---------- Main ---------- */
   .main{flex:1;padding:24px 32px;min-width:0;}
-  .topbar{
-    display:flex;
-    align-items:center;
-    gap:16px;
-    margin-bottom:28px;
-  }
-  .search-top{
-    flex:1;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:10px 14px;
-    color:var(--text-faint);
-  }
-  .search-top input{
-    background:none;border:none;outline:none;
-    color:var(--text);font-size:14px;width:100%;
-  }
-  .avatar{
-    width:38px;height:38px;border-radius:10px;
-    background:var(--green);
-    color:#0b0f10;
-    font-weight:700;font-size:14px;
-    display:flex;align-items:center;justify-content:center;
-  }
+  .topbar{display:flex;align-items:center;gap:16px;margin-bottom:28px;}
+  .search-top{flex:1;display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text-faint);}
+  .search-top input{background:none;border:none;outline:none;color:var(--text);font-size:14px;width:100%;}
+  .avatar{width:38px;height:38px;border-radius:10px;background:var(--green);color:#0b0f10;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;}
 
-  .page-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    margin-bottom:24px;
-    flex-wrap:wrap;
-    gap:16px;
-  }
+  .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:16px;}
   .page-header h1{font-size:28px;font-weight:700;margin-bottom:6px;}
   .page-header p{color:var(--text-dim);font-size:14px;}
 
-  .btn-primary{
-    display:flex;align-items:center;gap:8px;
-    background:var(--green);
-    color:#0b0f10;
-    border:none;
-    padding:11px 18px;
-    border-radius:10px;
-    font-size:14px;font-weight:600;
-    cursor:pointer;
-    white-space:nowrap;
-  }
+  .btn-primary{display:flex;align-items:center;gap:8px;background:var(--green);color:#0b0f10;border:none;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;}
   .btn-primary:hover{opacity:.9;}
+  .btn-secondary{display:flex;align-items:center;gap:8px;background:var(--panel-2);color:var(--text);border:1px solid var(--border);padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
+  .btn-secondary:hover{border-color:var(--text-faint);}
+  .btn-danger{background:var(--red);color:#fff;border:none;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
 
-  .search-panel{
-    display:flex;align-items:center;gap:10px;
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:12px 14px;
-    margin-bottom:20px;
-    color:var(--text-faint);
-  }
-  .search-panel input{
-    background:none;border:none;outline:none;
-    color:var(--text);font-size:14px;width:100%;
-  }
+  .search-panel{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:20px;color:var(--text-faint);}
+  .search-panel input{background:none;border:none;outline:none;color:var(--text);font-size:14px;width:100%;}
 
-  .table-wrap{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:14px;
-    overflow:hidden;
-  }
+  .table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
   table{width:100%;border-collapse:collapse;}
-  thead th{
-    text-align:left;
-    font-size:12px;
-    letter-spacing:.05em;
-    text-transform:uppercase;
-    color:var(--text-faint);
-    padding:14px 20px;
-    border-bottom:1px solid var(--border);
-  }
-  tbody td{
-    padding:16px 20px;
-    border-bottom:1px solid var(--border);
-    font-size:14px;
-    vertical-align:middle;
-  }
+  thead th{text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-faint);padding:14px 20px;border-bottom:1px solid var(--border);}
+  tbody td{padding:16px 20px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle;}
   tbody tr:last-child td{border-bottom:none;}
   tbody tr:hover{background:var(--panel-2);}
   .kode{color:var(--text-dim);}
-  .nama-obat{color:var(--green);font-weight:600;}
+  .nama-obat{color:var(--green);font-weight:600;cursor:pointer;}
+  .nama-obat:hover{text-decoration:underline;}
   .stok-num{font-weight:700;font-size:15px;}
   .stok-min{color:var(--text-faint);font-size:12px;margin-left:8px;}
-  .stok-bar{
-    width:110px;height:5px;border-radius:4px;
-    background:var(--border);
-    overflow:hidden;margin-top:6px;
-  }
+  .stok-bar{width:110px;height:5px;border-radius:4px;background:var(--border);overflow:hidden;margin-top:6px;}
   .stok-bar-fill{height:100%;border-radius:4px;}
   .fill-green{background:var(--green);}
   .fill-orange{background:var(--orange);}
   .fill-red{background:var(--red);}
   .stok-num.warn{color:var(--orange);}
+  .stok-num.crit{color:var(--red);}
 
-  .tag-exp{
-    display:inline-block;
-    font-size:12px;font-weight:600;
-    padding:4px 10px;border-radius:6px;
-  }
+  .tag-exp{display:inline-block;font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;}
   .tag-exp.soon{background:var(--red-soft);color:var(--red);}
 
   .aksi{display:flex;gap:8px;}
-  .aksi button{
-    width:30px;height:30px;
-    border-radius:7px;
-    border:1px solid var(--border);
-    background:var(--panel-2);
-    color:var(--text-dim);
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;
-  }
+  .aksi button{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .aksi button:hover{color:var(--text);border-color:var(--text-faint);}
   .aksi button.del:hover{color:var(--red);border-color:var(--red);}
 
-  @media (max-width:900px){
-    .sidebar{display:none;}
-    .main{padding:16px;}
-  }
+  /* ---------- Detail view ---------- */
+  #detailView{display:none;}
+  .back-link{display:inline-flex;align-items:center;gap:8px;color:var(--text-dim);text-decoration:none;font-size:14px;background:none;border:none;cursor:pointer;margin-bottom:18px;font-family:'Inter',sans-serif;}
+  .back-link:hover{color:var(--text);}
+
+  .detail-header{display:flex;align-items:center;gap:16px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px;}
+  .detail-icon{width:56px;height:56px;border-radius:12px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .detail-title-row{display:flex;align-items:center;gap:10px;}
+  .detail-title-row h2{font-size:22px;font-weight:700;}
+  .status-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;}
+  .status-badge.aman{background:var(--green-soft);color:var(--green);}
+  .status-badge.menipis{background:var(--orange-soft);color:var(--orange);}
+  .status-badge.kritis{background:var(--red-soft);color:var(--red);}
+  .status-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .detail-sub{display:flex;align-items:center;gap:8px;color:var(--text-dim);font-size:13px;margin-top:4px;}
+
+  .detail-grid{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;}
+  @media (max-width:950px){.detail-grid{grid-template-columns:1fr;}}
+
+  .stok-card{background:linear-gradient(135deg,var(--green),#17915f);border-radius:14px;padding:22px;color:#06110c;margin-bottom:20px;position:relative;overflow:hidden;}
+  .stok-card h3{font-size:14px;font-weight:600;opacity:.85;margin-bottom:10px;}
+  .stok-card .big{font-size:36px;font-weight:700;}
+  .stok-card .unit{font-size:15px;font-weight:500;margin-left:6px;opacity:.85;}
+  .stok-card .min-info{margin-top:14px;font-size:13px;opacity:.85;}
+
+  .info-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;}
+  .info-card h3{font-size:15px;font-weight:600;margin-bottom:16px;}
+  .info-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .info-row:last-child{margin-bottom:0;}
+  .info-row .ic{width:34px;height:34px;border-radius:9px;background:var(--panel-2);display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex-shrink:0;}
+  .info-row .lbl{font-size:12px;color:var(--text-faint);}
+  .info-row .val{font-size:14px;font-weight:600;}
+
+  .riwayat-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;}
+  .riwayat-card h3{font-size:15px;font-weight:600;margin-bottom:16px;}
+  .riwayat-card table thead th{padding:10px 14px;font-size:11px;}
+  .riwayat-card table tbody td{padding:14px;font-size:13px;}
+  .neg{color:var(--red);font-weight:600;}
+  .status-pill{background:var(--green-soft);color:var(--green);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;}
+  .empty-state{color:var(--text-faint);font-size:13px;padding:24px 4px;text-align:center;}
+
+  /* ---------- Modal edit ---------- */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:440px;padding:24px;}
+  .modal-box h3{font-size:18px;font-weight:700;margin-bottom:18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;}
+  .field input,.field select{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--green);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:60;}
+
+  @media (max-width:900px){.sidebar{display:none;}.main{padding:16px;}}
 </style>
 </head>
 <body>
 
   <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-icon">+</div>
-      Sigap-Farmasi
-    </div>
-
+    <div class="brand"><div class="brand-icon">+</div>Sigap-Farmasi</div>
     <div>
       <div class="menu-label">Menu Utama</div>
-      <nav>
-        <ul>
-          <li><a href="index.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            Dashboard
-          </a></li>
-          <li><a href="data-obat.html" class="active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 4.5l6 6M15 9l4.5-4.5M9 15l-6 6M20 20l-4-4"/><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/></svg>
-            Data Obat
-          </a></li>
-          <li><a href="fasilitas.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
-            Fasilitas Kesehatan
-          </a></li>
-          <li><a href="kebutuhan.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16.5V7.5a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 7.5v9a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73z"/></svg>
-            Kebutuhan Obat
-          </a></li>
-          <li><a href="distribusi.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="5.5" cy="19.5" r="1.5"/><circle cx="18.5" cy="19.5" r="1.5"/></svg>
-            Distribusi Obat
-          </a></li>
-          <li><a href="monitoring.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
-            Monitoring Stok
-          </a></li>
-        </ul>
-      </nav>
+      <nav><ul>
+        <li><a href="index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard</a></li>
+        <li><a href="data-obat.html" class="active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 4.5l6 6M15 9l4.5-4.5M9 15l-6 6M20 20l-4-4"/><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/></svg>
+          Data Obat</a></li>
+        <li><a href="fasilitas.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+          Fasilitas Kesehatan</a></li>
+        <li><a href="kebutuhan.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16.5V7.5a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 7.5v9a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73z"/></svg>
+          Kebutuhan Obat</a></li>
+        <li><a href="distribusi.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="5.5" cy="19.5" r="1.5"/><circle cx="18.5" cy="19.5" r="1.5"/></svg>
+          Distribusi Obat</a></li>
+        <li><a href="monitoring.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+          Monitoring Stok</a></li>
+      </ul></nav>
     </div>
-
     <div>
       <div class="menu-label">Lainnya</div>
-      <nav>
-        <ul>
-          <li><a href="akun.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-            Manajemen Akun
-          </a></li>
-          <li><a href="laporan.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-            Laporan
-          </a></li>
-          <li><a href="pengaturan.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Pengaturan
-          </a></li>
-        </ul>
-      </nav>
+      <nav><ul>
+        <li><a href="akun.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          Manajemen Akun</a></li>
+        <li><a href="laporan.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          Laporan</a></li>
+        <li><a href="pengaturan.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Pengaturan</a></li>
+      </ul></nav>
     </div>
   </aside>
 
@@ -291,162 +207,268 @@
       <div class="avatar">AD</div>
     </div>
 
-    <div class="page-header">
-      <div>
-        <h1>Data Obat</h1>
-        <p>Kelola stok dan informasi obat-obatan</p>
+    <!-- ========== LIST VIEW ========== -->
+    <div id="listView">
+      <div class="page-header">
+        <div>
+          <h1>Data Obat</h1>
+          <p>Kelola stok dan informasi obat-obatan</p>
+        </div>
+        <button class="btn-primary" onclick="tambahObat()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Tambah Obat
+        </button>
       </div>
-      <button class="btn-primary" onclick="alert('Buka form tambah obat di sini')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        Tambah Obat
+
+      <div class="search-panel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchObat" placeholder="Cari nama obat..." oninput="renderTable()">
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Kode</th><th>Nama Obat</th><th>Kategori</th><th>Stok</th><th>Kedaluwarsa</th><th>Lokasi</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="tabelObat"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ========== DETAIL VIEW ========== -->
+    <div id="detailView">
+      <button class="back-link" onclick="tutupDetail()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Kembali ke Inventori
       </button>
-    </div>
 
-    <div class="search-panel">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" id="searchObat" placeholder="Cari nama obat..." oninput="filterTable()">
-    </div>
+      <div class="detail-header">
+        <div class="detail-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16.5V7.5a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 7.5v9a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73z"/></svg>
+        </div>
+        <div>
+          <div class="detail-title-row">
+            <h2 id="dTitle"></h2>
+            <span class="status-badge" id="dStatus"><span class="dot"></span><span id="dStatusText"></span></span>
+          </div>
+          <div class="detail-sub"><span id="dKode"></span>&nbsp;•&nbsp;<span id="dKategori"></span></div>
+        </div>
+      </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Kode</th>
-            <th>Nama Obat</th>
-            <th>Kategori</th>
-            <th>Stok</th>
-            <th>Kedaluwarsa</th>
-            <th>Lokasi</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="tabelObat">
-          <tr>
-            <td class="kode">OBT-017</td>
-            <td class="nama-obat">Alkohol 70% 1L</td>
-            <td>Antiseptik</td>
-            <td>
-              <span class="stok-num warn">493</span><span class="stok-min">min 200</span>
-              <div class="stok-bar"><div class="stok-bar-fill fill-orange" style="width:60%"></div></div>
-            </td>
-            <td>22/8/2027</td>
-            <td>RSUPN dr. Cipto Mangunkusumo</td>
-            <td class="aksi">
-              <button title="Lihat">👁</button>
-              <button title="Edit">✎</button>
-              <button class="del" title="Hapus">🗑</button>
-            </td>
-          </tr>
-          <tr>
-            <td class="kode">OBT-385665</td>
-            <td class="nama-obat">Amoxicillin</td>
-            <td>Antibiotik</td>
-            <td>
-              <span class="stok-num">1.000</span><span class="stok-min">min 10</span>
-              <div class="stok-bar"><div class="stok-bar-fill fill-green" style="width:95%"></div></div>
-            </td>
-            <td>22/8/2028</td>
-            <td>Posko Darurat Sigi</td>
-            <td class="aksi">
-              <button title="Lihat">👁</button>
-              <button title="Edit">✎</button>
-              <button class="del" title="Hapus">🗑</button>
-            </td>
-          </tr>
-          <tr>
-            <td class="kode">OBT-002</td>
-            <td class="nama-obat">Amoxicillin 500mg</td>
-            <td>Antibiotik</td>
-            <td>
-              <span class="stok-num">3.000</span><span class="stok-min">min 1.000</span>
-              <div class="stok-bar"><div class="stok-bar-fill fill-green" style="width:80%"></div></div>
-            </td>
-            <td>15/10/2026</td>
-            <td>RSUPN dr. Cipto Mangunkusumo</td>
-            <td class="aksi">
-              <button title="Lihat">👁</button>
-              <button title="Edit">✎</button>
-              <button class="del" title="Hapus">🗑</button>
-            </td>
-          </tr>
-          <tr>
-            <td class="kode">OBT-006</td>
-            <td class="nama-obat">Antasida Doen</td>
-            <td>Gastrointestinal</td>
-            <td>
-              <span class="stok-num">4.500</span><span class="stok-min">min 1.000</span>
-              <div class="stok-bar"><div class="stok-bar-fill fill-green" style="width:85%"></div></div>
-            </td>
-            <td>30/11/2026</td>
-            <td>RSUPN dr. Cipto Mangunkusumo</td>
-            <td class="aksi">
-              <button title="Lihat">👁</button>
-              <button title="Edit">✎</button>
-              <button class="del" title="Hapus">🗑</button>
-            </td>
-          </tr>
-          <tr>
-            <td class="kode">OBT-005</td>
-            <td class="nama-obat">Betadine 60ml</td>
-            <td>Antiseptik</td>
-            <td>
-              <span class="stok-num">700</span><span class="stok-min">min 200</span>
-              <div class="stok-bar"><div class="stok-bar-fill fill-green" style="width:70%"></div></div>
-            </td>
-            <td>11/5/2028</td>
-            <td>RSUPN dr. Cipto Mangunkusumo</td>
-            <td class="aksi">
-              <button title="Lihat">👁</button>
-              <button title="Edit">✎</button>
-              <button class="del" title="Hapus">🗑</button>
-            </td>
-          </tr>
-          <tr>
-            <td class="kode">OBT-011</td>
-            <td class="nama-obat">Cefadroxil 500mg</td>
-            <td>Antibiotik</td>
-            <td>
-              <span class="stok-num">1.500</span><span class="stok-min">min 500</span>
-              <div class="stok-bar"><div class="stok-bar-fill fill-green" style="width:75%"></div></div>
-            </td>
-            <td>10/1/2027</td>
-            <td>RSUPN dr. Cipto Mangunkusumo</td>
-            <td class="aksi">
-              <button title="Lihat">👁</button>
-              <button title="Edit">✎</button>
-              <button class="del" title="Hapus">🗑</button>
-            </td>
-          </tr>
-          <tr>
-            <td class="kode">OBT-013</td>
-            <td class="nama-obat">Dexamethasone</td>
-            <td>Kortikosteroid</td>
-            <td>
-              <span class="stok-num">3.200</span><span class="stok-min">min 1.000</span>
-              <div class="stok-bar"><div class="stok-bar-fill fill-green" style="width:78%"></div></div>
-            </td>
-            <td><span class="tag-exp soon">12/4/2026</span></td>
-            <td>RSUPN dr. Cipto Mangunkusumo</td>
-            <td class="aksi">
-              <button title="Lihat">👁</button>
-              <button title="Edit">✎</button>
-              <button class="del" title="Hapus">🗑</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="detail-grid">
+        <div>
+          <div class="stok-card">
+            <h3>Total Stok Tersedia</h3>
+            <div><span class="big" id="dStok"></span><span class="unit" id="dUnit"></span></div>
+            <div class="min-info">Minimum stok aman: <span id="dMin"></span></div>
+          </div>
+          <div class="info-card">
+            <h3>Detail Penyimpanan</h3>
+            <div class="info-row">
+              <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+              <div><div class="lbl">Kedaluwarsa Pada</div><div class="val" id="dKedaluwarsa"></div></div>
+            </div>
+            <div class="info-row">
+              <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <div><div class="lbl">Lokasi Gudang</div><div class="val" id="dLokasi"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="riwayat-card">
+          <h3>Riwayat Distribusi Logistik</h3>
+          <table>
+            <thead><tr><th>No. Distribusi</th><th>Tanggal</th><th>Jumlah (Keluar)</th><th>Status</th></tr></thead>
+            <tbody id="dRiwayat"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 
-  <script>
-    function filterTable(){
-      const q = document.getElementById('searchObat').value.toLowerCase();
-      document.querySelectorAll('#tabelObat tr').forEach(row=>{
-        const nama = row.querySelector('.nama-obat').textContent.toLowerCase();
-        row.style.display = nama.includes(q) ? '' : 'none';
+  <!-- ========== MODAL EDIT ========== -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+      <h3>Edit Obat</h3>
+      <input type="hidden" id="editKode">
+      <div class="field"><label>Nama Obat</label><input type="text" id="editNama"></div>
+      <div class="field-row">
+        <div class="field"><label>Kategori</label><input type="text" id="editKategori"></div>
+        <div class="field"><label>Satuan</label><input type="text" id="editUnit"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Stok</label><input type="number" id="editStok"></div>
+        <div class="field"><label>Stok Minimum</label><input type="number" id="editMin"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Kedaluwarsa</label><input type="text" id="editKedaluwarsa" placeholder="dd/mm/yyyy"></div>
+        <div class="field"><label>Lokasi</label><input type="text" id="editLokasi"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="tutupModal()">Batal</button>
+        <button class="btn-primary" onclick="simpanEdit()">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  // ---------- Data (sementara di sisi client, belum tersambung database) ----------
+  let dataObat = [
+    {kode:'OBT-017', nama:'Alkohol 70% 1L', kategori:'Antiseptik', unit:'Botol', stok:493, min:200, kedaluwarsa:'22/8/2027', lokasi:'RSUPN dr. Cipto Mangunkusumo',
+      riwayat:[
+        {no:'DIST-20260821-MQNZ', tanggal:'21/8/2026', jumlah:-5, status:'Diterima'},
+        {no:'DIST-20260709-NOAO', tanggal:'9/7/2026', jumlah:-2, status:'Diterima'},
+        {no:'DIST-20260419-YPPG', tanggal:'19/4/2026', jumlah:-100, status:'Diterima'}
+      ]},
+    {kode:'OBT-385665', nama:'Amoxicillin', kategori:'Antibiotik', unit:'Kapsul', stok:1000, min:10, kedaluwarsa:'22/8/2028', lokasi:'Posko Darurat Sigi', riwayat:[]},
+    {kode:'OBT-002', nama:'Amoxicillin 500mg', kategori:'Antibiotik', unit:'Tablet', stok:3000, min:1000, kedaluwarsa:'15/10/2026', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[]},
+    {kode:'OBT-006', nama:'Antasida Doen', kategori:'Gastrointestinal', unit:'Tablet', stok:4500, min:1000, kedaluwarsa:'30/11/2026', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[]},
+    {kode:'OBT-005', nama:'Betadine 60ml', kategori:'Antiseptik', unit:'Botol', stok:700, min:200, kedaluwarsa:'11/5/2028', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[]},
+    {kode:'OBT-011', nama:'Cefadroxil 500mg', kategori:'Antibiotik', unit:'Kapsul', stok:1500, min:500, kedaluwarsa:'10/1/2027', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[]},
+    {kode:'OBT-013', nama:'Dexamethasone', kategori:'Kortikosteroid', unit:'Tablet', stok:3200, min:1000, kedaluwarsa:'12/4/2026', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[], segeraExp:true}
+  ];
+
+  function statusObat(item){
+    if(item.stok <= item.min) return {key:'kritis', label:'Kritis'};
+    if(item.stok <= item.min * 1.5) return {key:'menipis', label:'Menipis'};
+    return {key:'aman', label:'Aman'};
+  }
+
+  function fmt(n){ return n.toLocaleString('id-ID'); }
+
+  function renderTable(){
+    const q = (document.getElementById('searchObat').value || '').toLowerCase();
+    const tbody = document.getElementById('tabelObat');
+    tbody.innerHTML = '';
+    dataObat.filter(it => it.nama.toLowerCase().includes(q)).forEach(item=>{
+      const st = statusObat(item);
+      const barClass = st.key === 'kritis' ? 'fill-red' : st.key === 'menipis' ? 'fill-orange' : 'fill-green';
+      const numClass = st.key === 'kritis' ? 'crit' : st.key === 'menipis' ? 'warn' : '';
+      const pct = Math.min(100, Math.round((item.stok / (item.min * 3)) * 100));
+      const expCell = item.segeraExp
+        ? `<span class="tag-exp soon">${item.kedaluwarsa}</span>`
+        : item.kedaluwarsa;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="kode">${item.kode}</td>
+        <td class="nama-obat" onclick="bukaDetail('${item.kode}')">${item.nama}</td>
+        <td>${item.kategori}</td>
+        <td>
+          <span class="stok-num ${numClass}">${fmt(item.stok)}</span><span class="stok-min">min ${fmt(item.min)}</span>
+          <div class="stok-bar"><div class="stok-bar-fill ${barClass}" style="width:${pct}%"></div></div>
+        </td>
+        <td>${expCell}</td>
+        <td>${item.lokasi}</td>
+        <td class="aksi">
+          <button title="Lihat" onclick="bukaDetail('${item.kode}')">👁</button>
+          <button title="Edit" onclick="bukaModalEdit('${item.kode}')">✎</button>
+          <button class="del" title="Hapus" onclick="hapusObat('${item.kode}')">🗑</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- LIHAT (detail) ----------
+  function bukaDetail(kode){
+    const item = dataObat.find(o => o.kode === kode);
+    if(!item) return;
+    const st = statusObat(item);
+    document.getElementById('dTitle').textContent = item.nama;
+    document.getElementById('dStatus').className = 'status-badge ' + st.key;
+    document.getElementById('dStatusText').textContent = st.label;
+    document.getElementById('dKode').textContent = item.kode;
+    document.getElementById('dKategori').textContent = item.kategori;
+    document.getElementById('dStok').textContent = fmt(item.stok);
+    document.getElementById('dUnit').textContent = item.unit;
+    document.getElementById('dMin').textContent = fmt(item.min);
+    document.getElementById('dKedaluwarsa').textContent = item.kedaluwarsa;
+    document.getElementById('dLokasi').textContent = item.lokasi;
+
+    const rBody = document.getElementById('dRiwayat');
+    rBody.innerHTML = '';
+    if(item.riwayat.length === 0){
+      rBody.innerHTML = `<tr><td colspan="4" class="empty-state">Belum ada riwayat distribusi untuk obat ini.</td></tr>`;
+    } else {
+      item.riwayat.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.no}</td><td>${r.tanggal}</td><td class="neg">${r.jumlah}</td><td><span class="status-pill">${r.status}</span></td>`;
+        rBody.appendChild(tr);
       });
     }
-  </script>
 
+    document.getElementById('listView').style.display = 'none';
+    document.getElementById('detailView').style.display = 'block';
+    window.scrollTo(0,0);
+  }
+
+  function tutupDetail(){
+    document.getElementById('detailView').style.display = 'none';
+    document.getElementById('listView').style.display = 'block';
+  }
+
+  // ---------- EDIT ----------
+  function bukaModalEdit(kode){
+    const item = dataObat.find(o => o.kode === kode);
+    if(!item) return;
+    document.getElementById('editKode').value = item.kode;
+    document.getElementById('editNama').value = item.nama;
+    document.getElementById('editKategori').value = item.kategori;
+    document.getElementById('editUnit').value = item.unit;
+    document.getElementById('editStok').value = item.stok;
+    document.getElementById('editMin').value = item.min;
+    document.getElementById('editKedaluwarsa').value = item.kedaluwarsa;
+    document.getElementById('editLokasi').value = item.lokasi;
+    document.getElementById('editModal').classList.add('show');
+  }
+
+  function tutupModal(){
+    document.getElementById('editModal').classList.remove('show');
+  }
+
+  function simpanEdit(){
+    const kode = document.getElementById('editKode').value;
+    const item = dataObat.find(o => o.kode === kode);
+    if(!item) return;
+    item.nama = document.getElementById('editNama').value || item.nama;
+    item.kategori = document.getElementById('editKategori').value || item.kategori;
+    item.unit = document.getElementById('editUnit').value || item.unit;
+    item.stok = parseInt(document.getElementById('editStok').value) || 0;
+    item.min = parseInt(document.getElementById('editMin').value) || 0;
+    item.kedaluwarsa = document.getElementById('editKedaluwarsa').value || item.kedaluwarsa;
+    item.lokasi = document.getElementById('editLokasi').value || item.lokasi;
+
+    tutupModal();
+    renderTable();
+    tampilkanToast('Perubahan pada "' + item.nama + '" berhasil disimpan');
+  }
+
+  // ---------- HAPUS ----------
+  function hapusObat(kode){
+    const item = dataObat.find(o => o.kode === kode);
+    if(!item) return;
+    const yakin = confirm('Hapus data "' + item.nama + '" dari daftar obat? Tindakan ini tidak bisa dibatalkan.');
+    if(!yakin) return;
+    dataObat = dataObat.filter(o => o.kode !== kode);
+    renderTable();
+    tampilkanToast('"' + item.nama + '" berhasil dihapus');
+  }
+
+  // ---------- TAMBAH (placeholder ringan) ----------
+  function tambahObat(){
+    alert('Form tambah obat belum dibuat pada langkah ini. Fokus perbaikan saat ini hanya pada menu Aksi (lihat/edit/hapus).');
+  }
+
+  function tampilkanToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 2500);
+  }
+
+  renderTable();
+</script>
 </body>
 </html>
