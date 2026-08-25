@@ -388,16 +388,20 @@
   // KONEKSI SUPABASE
   // Ganti URL / KEY di bawah dengan milik project kamu sendiri
   // (Project Settings > API Keys > "anon" / "publishable" key).
+  //
+  // CATATAN PERBAIKAN: variabel klien Supabase diberi nama "db"
+  // (bukan "supabase") supaya TIDAK bentrok dengan variabel global
+  // "supabase" yang otomatis dibuat oleh library CDN di atas.
   // =========================================================
   const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
 
-  let supabase;
+  let db;
   try {
     if (!window.supabase) {
       throw new Error('Library Supabase gagal dimuat dari CDN (cek koneksi internet / ad-blocker).');
     }
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (e) {
     console.error('Gagal membuat koneksi Supabase:', e);
   }
@@ -451,13 +455,13 @@
     const tbody = document.getElementById('tabelObat');
     tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Memuat data...</td></tr>';
 
-    if(!supabase){
+    if(!db){
       tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Koneksi Supabase belum berhasil dibuat. Cek SUPABASE_URL / SUPABASE_ANON_KEY di kode, dan buka Console (F12) untuk detail error.</td></tr>';
       return;
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('obat')
         .select('*')
         .order('nama', { ascending: true });
@@ -575,7 +579,7 @@
   }
 
   async function simpanEdit(){
-    if(!supabase){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
+    if(!db){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
     const kode = document.getElementById('editKode').value;
     const nama = document.getElementById('editNama').value;
     const kategori = document.getElementById('editKategori').value;
@@ -585,7 +589,7 @@
     const kedaluwarsa = document.getElementById('editKedaluwarsa').value;
     const lokasi = document.getElementById('editLokasi').value;
 
-    const { error } = await supabase
+    const { error } = await db
       .from('obat')
       .update({ nama, kategori, unit, stok, min, kedaluwarsa, lokasi })
       .eq('kode', kode);
@@ -603,13 +607,13 @@
 
   // ---------- HAPUS ----------
   async function hapusObat(kode){
-    if(!supabase){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
+    if(!db){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
     const item = dataObat.find(o => o.kode === kode);
     if(!item) return;
     const yakin = confirm('Hapus data "' + item.nama + '" dari daftar obat? Tindakan ini tidak bisa dibatalkan.');
     if(!yakin) return;
 
-    const { error } = await supabase.from('obat').delete().eq('kode', kode);
+    const { error } = await db.from('obat').delete().eq('kode', kode);
 
     if(error){
       console.error(error);
@@ -651,7 +655,7 @@
   }
 
   async function simpanTambah(){
-    if(!supabase){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
+    if(!db){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
     const nama     = document.getElementById('tambahNama').value.trim();
     const kategori = document.getElementById('tambahKategori').value.trim();
     const unit     = document.getElementById('tambahUnit').value.trim();
@@ -676,7 +680,7 @@
       kedaluwarsa = `${parseInt(d)}/${parseInt(m)}/${y}`;
     }
 
-    const { error } = await supabase.from('obat').insert([
+    const { error } = await db.from('obat').insert([
       { kode, nama, kategori, unit, stok, min, kedaluwarsa, lokasi }
     ]);
 
