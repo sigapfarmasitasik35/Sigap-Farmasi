@@ -121,7 +121,7 @@
   .aksi button:hover{color:var(--text);border-color:var(--text-faint);}
   .aksi button.del:hover{color:var(--red);border-color:var(--red);}
 
-  .empty-msg{color:var(--text-faint);font-size:13px;text-align:center;padding:32px 12px;}
+  .empty-msg{color:var(--text-faint);font-size:13px;text-align:center;padding:32px 12px;white-space:normal;}
 
   /* ---------- Detail view ---------- */
   #listView{display:flex; flex-direction:column; height:100%; min-height:0;}
@@ -179,7 +179,7 @@
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
 
-  .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:60;max-width:320px;}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:60;max-width:360px;}
   .toast.error{background:var(--red);color:#fff;}
 
   @media (max-width:900px){
@@ -386,14 +386,17 @@
 <script>
   // =========================================================
   // KONEKSI SUPABASE
-  // Ganti HANYA baris SUPABASE_ANON_KEY di bawah ini dengan
-  // "Publishable key" dari Project Settings > API Keys milikmu.
+  // Ganti URL / KEY di bawah dengan milik project kamu sendiri
+  // (Project Settings > API Keys > "anon" / "publishable" key).
   // =========================================================
   const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
 
   let supabase;
   try {
+    if (!window.supabase) {
+      throw new Error('Library Supabase gagal dimuat dari CDN (cek koneksi internet / ad-blocker).');
+    }
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (e) {
     console.error('Gagal membuat koneksi Supabase:', e);
@@ -403,8 +406,10 @@
   let dataObat = [];
 
   function statusObat(item){
-    if(item.stok <= item.min) return {key:'kritis', label:'Kritis'};
-    if(item.stok <= item.min * 1.5) return {key:'menipis', label:'Menipis'};
+    const stok = Number(item.stok) || 0;
+    const min = Number(item.min) || 0;
+    if(stok <= min) return {key:'kritis', label:'Kritis'};
+    if(stok <= min * 1.5) return {key:'menipis', label:'Menipis'};
     return {key:'aman', label:'Aman'};
   }
 
@@ -416,9 +421,29 @@
     const parts = tgl.split('/');
     if(parts.length !== 3) return false;
     const [d, m, y] = parts.map(Number);
+    if(!d || !m || !y) return false;
     const tanggalExp = new Date(y, m - 1, d);
     const selisihHari = (tanggalExp - new Date()) / (1000 * 60 * 60 * 24);
     return selisihHari >= 0 && selisihHari <= 90;
+  }
+
+  // Ubah pesan error Supabase yang teknis jadi lebih mudah dipahami
+  function pesanErrorRamah(error){
+    if(!error) return 'Terjadi kesalahan yang tidak diketahui.';
+    const msg = error.message || String(error);
+    if(/row-level security|permission denied|RLS/i.test(msg)){
+      return 'Akses ditolak oleh Row Level Security (RLS) di Supabase. ' +
+             'Buat policy SELECT/INSERT/UPDATE/DELETE untuk tabel "obat", atau nonaktifkan RLS sementara saat development. ' +
+             '(Detail teknis: ' + msg + ')';
+    }
+    if(/relation .* does not exist|could not find the table/i.test(msg)){
+      return 'Tabel "obat" belum ada di database Supabase kamu. Buat tabelnya dulu lewat SQL Editor. ' +
+             '(Detail teknis: ' + msg + ')';
+    }
+    if(/Failed to fetch|NetworkError/i.test(msg)){
+      return 'Tidak bisa terhubung ke Supabase. Cek koneksi internet, atau apakah SUPABASE_URL sudah benar.';
+    }
+    return msg;
   }
 
   // ---------- Muat data dari Supabase ----------
@@ -427,30 +452,35 @@
     tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Memuat data...</td></tr>';
 
     if(!supabase){
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Koneksi Supabase belum dikonfigurasi. Cek SUPABASE_URL / SUPABASE_ANON_KEY di kode.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Koneksi Supabase belum berhasil dibuat. Cek SUPABASE_URL / SUPABASE_ANON_KEY di kode, dan buka Console (F12) untuk detail error.</td></tr>';
       return;
     }
 
-    const { data, error } = await supabase
-      .from('obat')
-      .select('*')
-      .order('nama', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('obat')
+        .select('*')
+        .order('nama', { ascending: true });
 
-    if(error){
-      console.error(error);
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Gagal memuat data: ' + error.message + '</td></tr>';
-      return;
+      if(error){
+        console.error(error);
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Gagal memuat data: ' + pesanErrorRamah(error) + '</td></tr>';
+        return;
+      }
+
+      dataObat = (data || []).map(row => ({ ...row, riwayat: row.riwayat || [] }));
+      renderTable();
+    } catch (e) {
+      console.error(e);
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Gagal memuat data: ' + pesanErrorRamah(e) + '</td></tr>';
     }
-
-    dataObat = (data || []).map(row => ({ ...row, riwayat: row.riwayat || [] }));
-    renderTable();
   }
 
   // ---------- Render tabel ----------
   function renderTable(){
     const q = (document.getElementById('searchObat').value || '').toLowerCase();
     const tbody = document.getElementById('tabelObat');
-    const list = dataObat.filter(it => it.nama.toLowerCase().includes(q));
+    const list = dataObat.filter(it => (it.nama || '').toLowerCase().includes(q));
 
     if(list.length === 0){
       tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Belum ada data obat. Klik "Tambah Obat" untuk menambahkan.</td></tr>';
@@ -462,7 +492,9 @@
       const st = statusObat(item);
       const barClass = st.key === 'kritis' ? 'fill-red' : st.key === 'menipis' ? 'fill-orange' : 'fill-green';
       const numClass = st.key === 'kritis' ? 'crit' : st.key === 'menipis' ? 'warn' : '';
-      const pct = Math.min(100, Math.round((item.stok / (item.min * 3 || 1)) * 100));
+      const stokNum = Number(item.stok) || 0;
+      const minNum = Number(item.min) || 0;
+      const pct = Math.min(100, Math.round((stokNum / (minNum * 3 || 1)) * 100));
       const expCell = segeraKedaluwarsa(item.kedaluwarsa)
         ? `<span class="tag-exp soon">${item.kedaluwarsa}</span>`
         : (item.kedaluwarsa || '-');
@@ -472,7 +504,7 @@
         <td class="nama-obat" onclick="bukaDetail('${item.kode}')">${item.nama}</td>
         <td>${item.kategori || '-'}</td>
         <td>
-          <span class="stok-num ${numClass}">${fmt(item.stok)}</span><span class="stok-min">min ${fmt(item.min)}</span>
+          <span class="stok-num ${numClass}">${fmt(stokNum)}</span><span class="stok-min">min ${fmt(minNum)}</span>
           <div class="stok-bar"><div class="stok-bar-fill ${barClass}" style="width:${pct}%"></div></div>
         </td>
         <td>${expCell}</td>
@@ -543,6 +575,7 @@
   }
 
   async function simpanEdit(){
+    if(!supabase){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
     const kode = document.getElementById('editKode').value;
     const nama = document.getElementById('editNama').value;
     const kategori = document.getElementById('editKategori').value;
@@ -558,7 +591,8 @@
       .eq('kode', kode);
 
     if(error){
-      tampilkanToast('Gagal menyimpan perubahan: ' + error.message, true);
+      console.error(error);
+      tampilkanToast('Gagal menyimpan perubahan: ' + pesanErrorRamah(error), true);
       return;
     }
 
@@ -569,6 +603,7 @@
 
   // ---------- HAPUS ----------
   async function hapusObat(kode){
+    if(!supabase){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
     const item = dataObat.find(o => o.kode === kode);
     if(!item) return;
     const yakin = confirm('Hapus data "' + item.nama + '" dari daftar obat? Tindakan ini tidak bisa dibatalkan.');
@@ -577,7 +612,8 @@
     const { error } = await supabase.from('obat').delete().eq('kode', kode);
 
     if(error){
-      tampilkanToast('Gagal menghapus data: ' + error.message, true);
+      console.error(error);
+      tampilkanToast('Gagal menghapus data: ' + pesanErrorRamah(error), true);
       return;
     }
 
@@ -615,6 +651,7 @@
   }
 
   async function simpanTambah(){
+    if(!supabase){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
     const nama     = document.getElementById('tambahNama').value.trim();
     const kategori = document.getElementById('tambahKategori').value.trim();
     const unit     = document.getElementById('tambahUnit').value.trim();
@@ -644,7 +681,8 @@
     ]);
 
     if(error){
-      tampilkanToast('Gagal menyimpan obat baru: ' + error.message, true);
+      console.error(error);
+      tampilkanToast('Gagal menyimpan obat baru: ' + pesanErrorRamah(error), true);
       return;
     }
 
@@ -660,7 +698,7 @@
     t.className = 'toast' + (isError ? ' error' : '');
     t.style.display = 'block';
     clearTimeout(window._toastTimer);
-    window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 3000);
+    window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 6000);
   }
 
   // ---------- Mulai ----------
