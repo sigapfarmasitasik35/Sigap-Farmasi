@@ -349,7 +349,35 @@
       </div>
     </div>
   </div>
-
+<!-- ========== MODAL TAMBAH OBAT ========== -->
+<div class="modal-overlay" id="tambahModal">
+  <div class="modal-box">
+    <h3>Tambah Obat Baru</h3>
+    <div class="field-row">
+      <div class="field"><label>Nama Obat</label><input type="text" id="tambahNama" placeholder="Nama obat"></div>
+      <div class="field"><label>Kode Obat</label><input type="text" id="tambahKode" readonly></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Kategori</label><input type="text" id="tambahKategori" placeholder="Contoh: Analgesik"></div>
+      <div class="field"><label>Satuan</label><input type="text" id="tambahUnit" placeholder="Contoh: Tablet"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Stok Awal</label><input type="number" id="tambahStok" value="0" min="0"></div>
+      <div class="field"><label>Stok Minimum</label><input type="number" id="tambahMin" value="10" min="0"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Tanggal Kedaluwarsa</label><input type="date" id="tambahKedaluwarsa"></div>
+      <div class="field"><label>Lokasi Penyimpanan (Gudang/Faskes)</label>
+        <select id="tambahLokasi"><option value="">Pilih Lokasi</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Keterangan (Opsional)</label><input type="text" id="tambahKeterangan" placeholder="Catatan tambahan"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="tutupModalTambah()">Batal</button>
+      <button class="btn-primary" onclick="simpanTambah()">Tambah Obat</button>
+    </div>
+  </div>
+</div>
   <div class="toast" id="toast"></div>
 
 <script>
@@ -376,7 +404,46 @@
   }
 
   function fmt(n){ return n.toLocaleString('id-ID'); }
+// ---------- TAMBAH OBAT (baru) ----------
+function generateKodeObat(){
+  const rand = Math.floor(100000 + Math.random() * 900000);
+  return 'OBT-' + rand;
+}
 
+function tutupModalTambah(){
+  document.getElementById('tambahModal').classList.remove('show');
+}
+
+function simpanTambah(){
+  const nama     = document.getElementById('tambahNama').value.trim();
+  const kategori = document.getElementById('tambahKategori').value.trim();
+  const unit     = document.getElementById('tambahUnit').value.trim();
+  const lokasi   = document.getElementById('tambahLokasi').value;
+  const stok     = parseInt(document.getElementById('tambahStok').value) || 0;
+  const min      = parseInt(document.getElementById('tambahMin').value) || 0;
+  const tglInput = document.getElementById('tambahKedaluwarsa').value; // format yyyy-mm-dd
+
+  if(!nama || !kategori || !unit || !lokasi){
+    alert('Nama Obat, Kategori, Satuan, dan Lokasi Penyimpanan wajib diisi.');
+    return;
+  }
+
+  let kedaluwarsa = '-';
+  if(tglInput){
+    const [y, m, d] = tglInput.split('-');
+    kedaluwarsa = `${parseInt(d)}/${parseInt(m)}/${y}`; // disamakan dengan format data lama (dd/m/yyyy)
+  }
+
+  dataObat.push({
+    kode: document.getElementById('tambahKode').value,
+    nama, kategori, unit, stok, min, kedaluwarsa, lokasi,
+    riwayat: []
+  });
+
+  tutupModalTambah();
+  renderTable();
+  tampilkanToast('Obat "' + nama + '" berhasil ditambahkan');
+}
   function renderTable(){
     const q = (document.getElementById('searchObat').value || '').toLowerCase();
     const tbody = document.getElementById('tabelObat');
@@ -494,9 +561,24 @@
   }
 
   // ---------- TAMBAH (placeholder ringan) ----------
-  function tambahObat(){
-    alert('Form tambah obat belum dibuat pada langkah ini. Fokus perbaikan saat ini hanya pada menu Aksi (lihat/edit/hapus).');
-  }
+    function tambahObat(){
+  document.getElementById('tambahNama').value = '';
+  document.getElementById('tambahKategori').value = '';
+  document.getElementById('tambahUnit').value = '';
+  document.getElementById('tambahStok').value = 0;
+  document.getElementById('tambahMin').value = 10;
+  document.getElementById('tambahKedaluwarsa').value = '';
+  document.getElementById('tambahKeterangan').value = '';
+  document.getElementById('tambahKode').value = generateKodeObat();
+
+  // Isi dropdown lokasi otomatis dari lokasi yang sudah ada di data
+  const lokasiSelect = document.getElementById('tambahLokasi');
+  const lokasiUnik = [...new Set(dataObat.map(o => o.lokasi))];
+  lokasiSelect.innerHTML = '<option value="">Pilih Lokasi</option>' +
+    lokasiUnik.map(l => `<option value="${l}">${l}</option>`).join('');
+
+  document.getElementById('tambahModal').classList.add('show');
+}
 
   function tampilkanToast(msg){
     const t = document.getElementById('toast');
