@@ -6,6 +6,7 @@
 <title>Sigap-Farmasi – Data Obat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bg:#0b0f10;
@@ -381,22 +382,28 @@
   <div class="toast" id="toast"></div>
 
 <script>
+  // ---------- Koneksi Supabase ----------
+const SUPABASE_URL = 'https://abcxyzproject.supabase.co';   // ganti dengan Project URL kamu
+const SUPABASE_ANON_KEY = 'isi-dengan-anon-public-key-kamu'; // ganti dengan anon key kamu
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   // ---------- Data (sementara di sisi client, belum tersambung database) ----------
-  let dataObat = [
-    {kode:'OBT-017', nama:'Alkohol 70% 1L', kategori:'Antiseptik', unit:'Botol', stok:493, min:200, kedaluwarsa:'22/8/2027', lokasi:'RSUPN dr. Cipto Mangunkusumo',
-      riwayat:[
-        {no:'DIST-20260821-MQNZ', tanggal:'21/8/2026', jumlah:-5, status:'Diterima'},
-        {no:'DIST-20260709-NOAO', tanggal:'9/7/2026', jumlah:-2, status:'Diterima'},
-        {no:'DIST-20260419-YPPG', tanggal:'19/4/2026', jumlah:-100, status:'Diterima'}
-      ]},
-    {kode:'OBT-385665', nama:'Amoxicillin', kategori:'Antibiotik', unit:'Kapsul', stok:1000, min:10, kedaluwarsa:'22/8/2028', lokasi:'Posko Darurat Sigi', riwayat:[]},
-    {kode:'OBT-002', nama:'Amoxicillin 500mg', kategori:'Antibiotik', unit:'Tablet', stok:3000, min:1000, kedaluwarsa:'15/10/2026', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[]},
-    {kode:'OBT-006', nama:'Antasida Doen', kategori:'Gastrointestinal', unit:'Tablet', stok:4500, min:1000, kedaluwarsa:'30/11/2026', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[]},
-    {kode:'OBT-005', nama:'Betadine 60ml', kategori:'Antiseptik', unit:'Botol', stok:700, min:200, kedaluwarsa:'11/5/2028', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[]},
-    {kode:'OBT-011', nama:'Cefadroxil 500mg', kategori:'Antibiotik', unit:'Kapsul', stok:1500, min:500, kedaluwarsa:'10/1/2027', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[]},
-    {kode:'OBT-013', nama:'Dexamethasone', kategori:'Kortikosteroid', unit:'Tablet', stok:3200, min:1000, kedaluwarsa:'12/4/2026', lokasi:'RSUPN dr. Cipto Mangunkusumo', riwayat:[], segeraExp:true}
-  ];
+     let dataObat = [];
 
+async function loadDataObat(){
+  const { data, error } = await supabase
+    .from('obat')
+    .select('*')
+    .order('nama', { ascending: true });
+
+  if(error){
+    console.error(error);
+    alert('Gagal memuat data obat dari database. Cek koneksi internet atau konfigurasi Supabase.');
+    return;
+  }
+
+  dataObat = data.map(row => ({ ...row, riwayat: row.riwayat || [] }));
+ loadDataObat();
+}
   function statusObat(item){
     if(item.stok <= item.min) return {key:'kritis', label:'Kritis'};
     if(item.stok <= item.min * 1.5) return {key:'menipis', label:'Menipis'};
@@ -414,14 +421,15 @@ function tutupModalTambah(){
   document.getElementById('tambahModal').classList.remove('show');
 }
 
-function simpanTambah(){
+async function simpanTambah(){
   const nama     = document.getElementById('tambahNama').value.trim();
   const kategori = document.getElementById('tambahKategori').value.trim();
   const unit     = document.getElementById('tambahUnit').value.trim();
   const lokasi   = document.getElementById('tambahLokasi').value;
   const stok     = parseInt(document.getElementById('tambahStok').value) || 0;
   const min      = parseInt(document.getElementById('tambahMin').value) || 0;
-  const tglInput = document.getElementById('tambahKedaluwarsa').value; // format yyyy-mm-dd
+  const tglInput = document.getElementById('tambahKedaluwarsa').value;
+  const kode     = document.getElementById('tambahKode').value;
 
   if(!nama || !kategori || !unit || !lokasi){
     alert('Nama Obat, Kategori, Satuan, dan Lokasi Penyimpanan wajib diisi.');
@@ -431,16 +439,22 @@ function simpanTambah(){
   let kedaluwarsa = '-';
   if(tglInput){
     const [y, m, d] = tglInput.split('-');
-    kedaluwarsa = `${parseInt(d)}/${parseInt(m)}/${y}`; // disamakan dengan format data lama (dd/m/yyyy)
+    kedaluwarsa = `${parseInt(d)}/${parseInt(m)}/${y}`;
   }
 
-  dataObat.push({
-    kode: document.getElementById('tambahKode').value,
-    nama, kategori, unit, stok, min, kedaluwarsa, lokasi,
-    riwayat: []
-  });
+  const { error } = await supabase.from('obat').insert([
+    { kode, nama, kategori, unit, stok, min, kedaluwarsa, lokasi }
+  ]);
+
+  if(error){
+    alert('Gagal menyimpan obat baru: ' + error.message);
+    return;
+  }
 
   tutupModalTambah();
+  await loadDataObat();
+  tampilkanToast('Obat "' + nama + '" berhasil ditambahkan');
+}
   renderTable();
   tampilkanToast('Obat "' + nama + '" berhasil ditambahkan');
 }
@@ -532,33 +546,49 @@ function simpanTambah(){
     document.getElementById('editModal').classList.remove('show');
   }
 
-  function simpanEdit(){
-    const kode = document.getElementById('editKode').value;
-    const item = dataObat.find(o => o.kode === kode);
-    if(!item) return;
-    item.nama = document.getElementById('editNama').value || item.nama;
-    item.kategori = document.getElementById('editKategori').value || item.kategori;
-    item.unit = document.getElementById('editUnit').value || item.unit;
-    item.stok = parseInt(document.getElementById('editStok').value) || 0;
-    item.min = parseInt(document.getElementById('editMin').value) || 0;
-    item.kedaluwarsa = document.getElementById('editKedaluwarsa').value || item.kedaluwarsa;
-    item.lokasi = document.getElementById('editLokasi').value || item.lokasi;
+  async function simpanEdit(){
+  const kode     = document.getElementById('editKode').value;
+  const nama     = document.getElementById('editNama').value;
+  const kategori = document.getElementById('editKategori').value;
+  const unit     = document.getElementById('editUnit').value;
+  const stok     = parseInt(document.getElementById('editStok').value) || 0;
+  const min      = parseInt(document.getElementById('editMin').value) || 0;
+  const kedaluwarsa = document.getElementById('editKedaluwarsa').value;
+  const lokasi   = document.getElementById('editLokasi').value;
 
-    tutupModal();
-    renderTable();
-    tampilkanToast('Perubahan pada "' + item.nama + '" berhasil disimpan');
+  const { error } = await supabase
+    .from('obat')
+    .update({ nama, kategori, unit, stok, min, kedaluwarsa, lokasi })
+    .eq('kode', kode);
+
+  if(error){
+    alert('Gagal menyimpan perubahan: ' + error.message);
+    return;
   }
+
+  tutupModal();
+  await loadDataObat();
+  tampilkanToast('Perubahan pada "' + nama + '" berhasil disimpan');
+}
 
   // ---------- HAPUS ----------
-  function hapusObat(kode){
-    const item = dataObat.find(o => o.kode === kode);
-    if(!item) return;
-    const yakin = confirm('Hapus data "' + item.nama + '" dari daftar obat? Tindakan ini tidak bisa dibatalkan.');
-    if(!yakin) return;
-    dataObat = dataObat.filter(o => o.kode !== kode);
-    renderTable();
-    tampilkanToast('"' + item.nama + '" berhasil dihapus');
+  async function hapusObat(kode){
+  const item = dataObat.find(o => o.kode === kode);
+  if(!item) return;
+
+  const yakin = confirm('Hapus data "' + item.nama + '" dari daftar obat? Tindakan ini tidak bisa dibatalkan.');
+  if(!yakin) return;
+
+  const { error } = await supabase.from('obat').delete().eq('kode', kode);
+
+  if(error){
+    alert('Gagal menghapus data: ' + error.message);
+    return;
   }
+
+  await loadDataObat();
+  tampilkanToast('"' + item.nama + '" berhasil dihapus');
+}
 
   // ---------- TAMBAH (placeholder ringan) ----------
     function tambahObat(){
