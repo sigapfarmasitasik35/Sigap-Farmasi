@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sigap-Farmasi – Distribusi Obat</title>
+<title>SIPHABEN – Distribusi Obat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -20,7 +20,7 @@
     --orange:#f5a524;
     --orange-soft:#3a2c14;
     --blue:#3b9eff;
-    --blue-soft:#122a3a;
+    --blue-soft:#132a3a;
     --text:#f2f4f3;
     --text-dim:#93a1a0;
     --text-faint:#5c6b6a;
@@ -75,7 +75,7 @@
     font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;
   }
 
-  .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:14px;flex-shrink:0;}
+  .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:14px;flex-shrink:0;}
   .page-header h1{font-size:20px;font-weight:700;margin-bottom:3px;}
   .page-header p{color:var(--text-dim);font-size:12.5px;}
 
@@ -84,62 +84,73 @@
   .btn-secondary{display:flex;align-items:center;gap:8px;background:var(--panel-2);color:var(--text);border:1px solid var(--border);padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;}
   .btn-secondary:hover{border-color:var(--text-faint);}
 
-  .search-panel{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:10px;color:var(--text-faint);flex-shrink:0;}
-  .search-panel input{background:none;border:none;outline:none;color:var(--text);font-size:13.5px;width:100%;}
+  .content{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:14px;}
+
+  /* ---------- Panel tabel distribusi ---------- */
+  .list-panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px; display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;
+  }
+  .search-inline{
+    display:flex;align-items:center;gap:9px;background:var(--panel-2);
+    border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text-faint);
+    max-width:340px;
+  }
+  .search-inline input{background:none;border:none;outline:none;color:var(--text);font-size:13.5px;width:100%;}
+  .search-inline svg{width:15px;height:15px;flex-shrink:0;}
 
   .table-wrap{
-    background:var(--panel);border:1px solid var(--border);border-radius:12px;
-    overflow:auto; -webkit-overflow-scrolling:touch;
-    flex:1; min-height:0;
+    background:var(--panel-2);border:1px solid var(--border);border-radius:10px;
+    overflow:auto; flex:1; min-height:0;
   }
-  table{width:100%;min-width:960px;border-collapse:collapse;}
+  table{width:100%;min-width:1020px;border-collapse:collapse;}
   thead th{
     text-align:left;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-faint);
-    padding:8px 16px;border-bottom:1px solid var(--border); white-space:nowrap;
-    position:sticky; top:0; background:var(--panel); z-index:1;
+    padding:12px 16px;border-bottom:1px solid var(--border); white-space:nowrap;
+    position:sticky; top:0; background:var(--panel-2); z-index:1;
   }
-  tbody td{padding:9px 16px;border-bottom:1px solid var(--border);font-size:12.5px;vertical-align:middle; white-space:nowrap;}
+  tbody td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:12.5px;vertical-align:middle; white-space:nowrap;}
   tbody tr:last-child td{border-bottom:none;}
-  tbody tr:hover{background:var(--panel-2);}
-  .resi{color:var(--text-dim);font-family:ui-monospace,SFMono-Regular,monospace;font-size:11.5px;}
-  .nama-obat{color:var(--green);font-weight:600;}
+  tbody tr:hover{background:var(--panel);}
+  .nomor-resi{color:var(--green);font-weight:600;font-family:monospace;}
 
-  .status-badge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;}
-  .status-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
-  .status-badge.menunggu{background:var(--orange-soft);color:var(--orange);}
-  .status-badge.dikirim{background:var(--blue-soft);color:var(--blue);}
-  .status-badge.diterima{background:var(--green-soft);color:var(--green);}
-  .status-badge.dibatalkan{background:var(--red-soft);color:var(--red);}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;cursor:pointer;}
+  .status-persiapan{background:var(--orange-soft);color:var(--orange);}
+  .status-dikirim{background:var(--blue-soft);color:var(--blue);}
+  .status-diterima{background:var(--green-soft);color:var(--green);}
+  .status-dibatalkan{background:var(--red-soft);color:var(--red);}
+
+  .empty-msg{color:var(--text-faint);font-size:13px;text-align:center;padding:36px 12px;white-space:normal;}
 
   .aksi{display:flex;gap:6px;}
-  .aksi button{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px;}
+  .aksi button{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px;}
   .aksi button:hover{color:var(--text);border-color:var(--text-faint);}
   .aksi button.del:hover{color:var(--red);border-color:var(--red);}
 
-  .empty-msg{color:var(--text-faint);font-size:13px;text-align:center;padding:32px 12px;white-space:normal;}
-
   /* ---------- Modal ---------- */
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;}
   .modal-overlay.show{display:flex;}
-  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:460px;padding:24px;max-height:90vh;overflow-y:auto;}
-  .modal-box h3{font-size:18px;font-weight:700;margin-bottom:18px;}
-  .field{margin-bottom:14px;}
-  .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;}
-  .field input,.field select{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;font-family:inherit;}
-  .field input:focus,.field select:focus{border-color:var(--green);}
-  .field input[readonly]{color:var(--text-faint);cursor:not-allowed;}
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:560px;padding:26px;max-height:90vh;overflow-y:auto;position:relative;}
+  .modal-box h3{font-size:19px;font-weight:700;margin-bottom:20px;}
+  .modal-close{position:absolute;top:22px;right:22px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;line-height:1;padding:4px;}
+  .modal-close:hover{color:var(--text);}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:7px;}
+  .field input,.field select,.field textarea{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;font-family:inherit;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);}
+  .field input[readonly]{color:var(--text-dim);}
+  .field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393a1a0' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field-hint{font-size:11.5px;color:var(--text-faint);margin-top:5px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
 
-  .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:60;max-width:360px;}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:10000;max-width:360px;}
   .toast.error{background:var(--red);color:#fff;}
 
   @media (max-width:900px){
     .sidebar{display:none;}
     .main{padding:14px;}
     .menu-toggle{display:flex;}
-  }
-  @media (max-width:640px){
     .field-row{grid-template-columns:1fr;}
   }
 </style>
@@ -148,7 +159,7 @@
 
   <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar">
-    <div class="brand"><div class="brand-icon">+</div>Sigap-Farmasi</div>
+    <div class="brand"><div class="brand-icon">+</div>SIPHABEN</div>
     <div>
       <div class="menu-label">Menu Utama</div>
       <nav><ul>
@@ -207,88 +218,74 @@
         <h1>Distribusi Obat</h1>
         <p>Lacak pengiriman logistik medis</p>
       </div>
-      <button class="btn-primary" onclick="bukaModalTambah()">
+      <button class="btn-primary" onclick="bukaModalKirim()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         Kirim Obat
       </button>
     </div>
 
-    <div class="search-panel">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" id="searchDistribusi" placeholder="Cari nomor distribusi..." oninput="renderTable()">
-    </div>
+    <div class="content">
+      <div class="list-panel">
+        <div class="search-inline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="cariResi" placeholder="Cari nomor distribusi..." oninput="renderTabel()">
+        </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Nomor Resi</th><th>Obat</th><th>Asal</th><th>Tujuan</th><th>Jumlah</th><th>Kurir</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr>
-        </thead>
-        <tbody id="tabelDistribusi"></tbody>
-      </table>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nomor Resi</th><th>Obat</th><th>Asal</th><th>Tujuan</th>
+                <th>Jumlah</th><th>Kurir</th><th>Tanggal</th><th>Status</th><th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tabelDistribusi"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 
-  <!-- ========== MODAL EDIT ========== -->
-  <div class="modal-overlay" id="editModal">
+  <!-- ========== MODAL KIRIM OBAT ========== -->
+  <div class="modal-overlay" id="kirimModal">
     <div class="modal-box">
-      <h3>Edit Distribusi</h3>
-      <input type="hidden" id="editId">
-      <div class="field"><label>Nomor Resi</label><input type="text" id="editNomorResi" readonly></div>
-      <div class="field"><label>Nama Obat</label><input type="text" id="editObat"></div>
-      <div class="field-row">
-        <div class="field"><label>Asal</label><input type="text" id="editAsal"></div>
-        <div class="field"><label>Tujuan</label><input type="text" id="editTujuan"></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Jumlah</label><input type="number" id="editJumlah" min="1"></div>
-        <div class="field"><label>Kurir</label><input type="text" id="editKurir"></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Tanggal Kirim</label><input type="date" id="editTanggal"></div>
-        <div class="field"><label>Status</label>
-          <select id="editStatus">
-            <option value="Menunggu">Menunggu</option>
-            <option value="Dikirim">Dikirim</option>
-            <option value="Diterima">Diterima</option>
-            <option value="Dibatalkan">Dibatalkan</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-secondary" onclick="tutupModalEdit()">Batal</button>
-        <button class="btn-primary" onclick="simpanEdit()">Simpan Perubahan</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== MODAL KIRIM OBAT (TAMBAH) ========== -->
-  <div class="modal-overlay" id="tambahModal">
-    <div class="modal-box">
+      <button class="modal-close" onclick="tutupModalKirim()">✕</button>
       <h3>Kirim Obat</h3>
-      <div class="field"><label>Nomor Resi</label><input type="text" id="tambahNomorResi" readonly placeholder="Dibuat otomatis..."></div>
-      <div class="field"><label>Nama Obat</label><input type="text" id="tambahObat" placeholder="Contoh: Paracetamol 500mg"></div>
-      <div class="field-row">
-        <div class="field"><label>Asal</label><input type="text" id="tambahAsal" placeholder="Gudang Farmasi Dinkes"></div>
-        <div class="field"><label>Tujuan</label><input type="text" id="tambahTujuan" placeholder="Puskesmas..."></div>
+
+      <div class="field">
+        <label>Nomor Resi</label>
+        <input type="text" id="dResi" readonly>
+        <div class="field-hint">Nomor resi dibuat otomatis, tapi bisa diubah manual kalau perlu.</div>
       </div>
+
+      <div class="field"><label>Obat</label><select id="dObat"><option value="">Memuat data obat...</option></select></div>
+
       <div class="field-row">
-        <div class="field"><label>Jumlah</label><input type="number" id="tambahJumlah" value="0" min="1"></div>
-        <div class="field"><label>Kurir</label><input type="text" id="tambahKurir" placeholder="Nama kurir"></div>
+        <div class="field"><label>Asal</label><input type="text" id="dAsal" placeholder="Contoh: Gudang Pusat Dinkes"></div>
+        <div class="field"><label>Tujuan</label><select id="dTujuan"><option value="">Memuat data fasilitas...</option></select></div>
       </div>
+
       <div class="field-row">
-        <div class="field"><label>Tanggal Kirim</label><input type="date" id="tambahTanggal"></div>
-        <div class="field"><label>Status</label>
-          <select id="tambahStatus">
-            <option value="Menunggu">Menunggu</option>
-            <option value="Dikirim">Dikirim</option>
-            <option value="Diterima">Diterima</option>
-            <option value="Dibatalkan">Dibatalkan</option>
+        <div class="field"><label>Jumlah</label><input type="number" min="1" id="dJumlah" placeholder="0"></div>
+        <div class="field"><label>Kurir</label><input type="text" id="dKurir" placeholder="Contoh: Budi / JNE Logistik"></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field"><label>Tanggal Kirim</label><input type="date" id="dTanggal"></div>
+        <div class="field">
+          <label>Status</label>
+          <select id="dStatus">
+            <option value="persiapan" selected>Persiapan</option>
+            <option value="dikirim">Dikirim</option>
+            <option value="diterima">Diterima</option>
+            <option value="dibatalkan">Dibatalkan</option>
           </select>
         </div>
       </div>
+
       <div class="modal-actions">
-        <button class="btn-secondary" onclick="tutupModalTambah()">Batal</button>
-        <button class="btn-primary" onclick="simpanTambah()">Simpan</button>
+        <button class="btn-secondary" onclick="tutupModalKirim()">Batal</button>
+        <button class="btn-primary" onclick="simpanDistribusi()">Kirim Obat</button>
       </div>
     </div>
   </div>
@@ -297,263 +294,217 @@
 
 <script>
   // =========================================================
-  // KONEKSI SUPABASE (project sama dengan data-obat.html)
-  // Variabel klien diberi nama "db" supaya tidak bentrok dengan
-  // variabel global "supabase" dari library CDN.
+  // KONEKSI SUPABASE (opsional).
+  // Kalau tabel "distribusi_obat" belum ada di Supabase, halaman ini
+  // tetap berjalan memakai DATA CONTOH (mode demo, tidak permanen).
+  // Dropdown Obat & Tujuan diambil otomatis dari tabel "obat" dan
+  // "fasilitas" yang sudah ada di Supabase.
   // =========================================================
   const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
 
   let db;
   try {
-    if (!window.supabase) {
-      throw new Error('Library Supabase gagal dimuat dari CDN (cek koneksi internet / ad-blocker).');
+    if (window.supabase) {
+      db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
-    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (e) {
     console.error('Gagal membuat koneksi Supabase:', e);
   }
 
-  // ---------- Data ----------
   let dataDistribusi = [];
+  let modeDemo = true;
 
-  function fmt(n){ return Number(n || 0).toLocaleString('id-ID'); }
+  const statusLabel = { persiapan:'Persiapan', dikirim:'Dikirim', diterima:'Diterima', dibatalkan:'Dibatalkan' };
+  const urutanStatus = ['persiapan','dikirim','diterima']; // dipakai untuk "klik status = naik ke tahap berikutnya"
 
-  function formatTanggal(tgl){
-    if(!tgl) return '-';
-    const d = new Date(tgl);
-    if(isNaN(d)) return tgl;
-    return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
-  }
-
-  function statusInfo(status){
-    const map = {
-      'Menunggu':  { key:'menunggu',  label:'Menunggu'  },
-      'Dikirim':   { key:'dikirim',   label:'Dikirim'   },
-      'Diterima':  { key:'diterima',  label:'Diterima'  },
-      'Dibatalkan':{ key:'dibatalkan',label:'Dibatalkan'}
-    };
-    return map[status] || { key:'menunggu', label: status || '-' };
-  }
-
-  function pesanErrorRamah(error){
-    if(!error) return 'Terjadi kesalahan yang tidak diketahui.';
-    const msg = error.message || String(error);
-    if(/row-level security|permission denied|RLS/i.test(msg)){
-      return 'Akses ditolak oleh Row Level Security (RLS) di Supabase. ' +
-             'Buat policy SELECT/INSERT/UPDATE/DELETE untuk tabel "distribusi_obat", atau nonaktifkan RLS sementara saat development. ' +
-             '(Detail teknis: ' + msg + ')';
-    }
-    if(/relation .* does not exist|could not find the table/i.test(msg)){
-      return 'Tabel "distribusi_obat" belum ada di database Supabase kamu. Jalankan SQL setup-nya dulu lewat SQL Editor. ' +
-             '(Detail teknis: ' + msg + ')';
-    }
-    if(/Failed to fetch|NetworkError/i.test(msg)){
-      return 'Tidak bisa terhubung ke Supabase. Cek koneksi internet, atau apakah SUPABASE_URL sudah benar.';
-    }
-    return msg;
-  }
-
-  // ---------- Muat data dari Supabase ----------
-  async function loadDataDistribusi(){
-    const tbody = document.getElementById('tabelDistribusi');
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-msg">Memuat data...</td></tr>';
-
-    if(!db){
-      tbody.innerHTML = '<tr><td colspan="9" class="empty-msg">Koneksi Supabase belum berhasil dibuat. Cek SUPABASE_URL / SUPABASE_ANON_KEY di kode, dan buka Console (F12) untuk detail error.</td></tr>';
-      return;
-    }
-
-    try {
-      const { data, error } = await db
-        .from('distribusi_obat')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+  // ---------- Muat data distribusi ----------
+  async function loadDistribusi(){
+    if(!db){ renderTabel(); return; }
+    try{
+      const { data, error } = await db.from('distribusi_obat').select('*').order('created_at', { ascending:false });
       if(error){
-        console.error(error);
-        tbody.innerHTML = '<tr><td colspan="9" class="empty-msg">Gagal memuat data: ' + pesanErrorRamah(error) + '</td></tr>';
-        return;
+        console.warn('Memakai data contoh (Supabase belum siap):', error.message);
+        modeDemo = true;
+      } else if (data){
+        dataDistribusi = data;
+        modeDemo = false;
       }
-
-      dataDistribusi = data || [];
-      renderTable();
-    } catch (e) {
-      console.error(e);
-      tbody.innerHTML = '<tr><td colspan="9" class="empty-msg">Gagal memuat data: ' + pesanErrorRamah(e) + '</td></tr>';
+    }catch(e){
+      console.warn('Memakai data contoh (Supabase belum siap):', e);
     }
+    renderTabel();
   }
 
-  // ---------- Render tabel ----------
-  function renderTable(){
-    const q = (document.getElementById('searchDistribusi').value || '').toLowerCase();
+  function renderTabel(){
     const tbody = document.getElementById('tabelDistribusi');
-    const list = dataDistribusi.filter(it =>
-      [it.nomor_resi, it.obat, it.asal, it.tujuan, it.kurir]
-        .filter(Boolean)
-        .some(f => f.toLowerCase().includes(q))
-    );
+    const kataKunci = (document.getElementById('cariResi').value || '').toLowerCase().trim();
+    const dataTampil = dataDistribusi.filter(d => !kataKunci || (d.nomor_resi || '').toLowerCase().includes(kataKunci));
 
-    if(list.length === 0){
+    if(dataTampil.length === 0){
       tbody.innerHTML = '<tr><td colspan="9" class="empty-msg">Tidak ada data yang ditemukan.</td></tr>';
       return;
     }
 
     tbody.innerHTML = '';
-    list.forEach(item=>{
-      const st = statusInfo(item.status);
+    dataTampil.forEach(d=>{
+      const tgl = d.tanggal_kirim ? new Date(d.tanggal_kirim).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }) : '-';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="resi">${item.nomor_resi}</td>
-        <td class="nama-obat">${item.obat}</td>
-        <td>${item.asal}</td>
-        <td>${item.tujuan}</td>
-        <td>${fmt(item.jumlah)}</td>
-        <td>${item.kurir}</td>
-        <td>${formatTanggal(item.tanggal_kirim)}</td>
-        <td><span class="status-badge ${st.key}"><span class="dot"></span>${st.label}</span></td>
+        <td class="nomor-resi">${d.nomor_resi}</td>
+        <td>${d.obat || '-'}</td>
+        <td>${d.asal || '-'}</td>
+        <td>${d.tujuan || '-'}</td>
+        <td>${d.jumlah ?? '-'}</td>
+        <td>${d.kurir || '-'}</td>
+        <td>${tgl}</td>
+        <td><span class="badge status-${d.status}" title="Klik untuk ubah ke tahap berikutnya" onclick="majukanStatus('${d.id}')">${statusLabel[d.status] || d.status}</span></td>
         <td class="aksi">
-          <button title="Edit" onclick="bukaModalEdit('${item.id}')">✎</button>
-          <button class="del" title="Hapus" onclick="hapusDistribusi('${item.id}')">🗑</button>
+          <button class="del" title="Hapus" onclick="hapusDistribusi('${d.id}')">🗑</button>
         </td>`;
       tbody.appendChild(tr);
     });
   }
 
-  // ---------- TAMBAH (Kirim Obat) ----------
-  async function bukaModalTambah(){
-    document.getElementById('tambahObat').value = '';
-    document.getElementById('tambahAsal').value = '';
-    document.getElementById('tambahTujuan').value = '';
-    document.getElementById('tambahJumlah').value = 0;
-    document.getElementById('tambahKurir').value = '';
-    document.getElementById('tambahTanggal').value = new Date().toISOString().slice(0,10);
-    document.getElementById('tambahStatus').value = 'Menunggu';
-    document.getElementById('tambahNomorResi').value = 'Memuat...';
-
-    document.getElementById('tambahModal').classList.add('show');
-
-    if(db){
-      const { data: resi, error } = await db.rpc('generate_nomor_resi');
-      document.getElementById('tambahNomorResi').value = error ? '(gagal dibuat otomatis)' : resi;
-    }
+  // ---------- Isi dropdown Obat dari tabel "obat" ----------
+  async function muatDropdownObat(){
+    const sel = document.getElementById('dObat');
+    sel.innerHTML = '<option value="">Pilih Obat</option>';
+    if(!db) return;
+    try{
+      const { data, error } = await db.from('obat').select('nama').order('nama', { ascending:true });
+      if(error || !data || data.length === 0) return;
+      data.forEach(o=>{
+        const opt = document.createElement('option');
+        opt.value = o.nama; opt.textContent = o.nama;
+        sel.appendChild(opt);
+      });
+    }catch(e){ console.warn('Gagal memuat daftar obat:', e); }
   }
 
-  function tutupModalTambah(){
-    document.getElementById('tambahModal').classList.remove('show');
+  // ---------- Isi dropdown Tujuan dari tabel "fasilitas" ----------
+  async function muatDropdownTujuan(){
+    const sel = document.getElementById('dTujuan');
+    sel.innerHTML = '<option value="">Pilih Fasilitas Tujuan</option>';
+    if(!db) return;
+    try{
+      const { data, error } = await db.from('fasilitas').select('nama').order('nama', { ascending:true });
+      if(error || !data || data.length === 0) return;
+      data.forEach(f=>{
+        const opt = document.createElement('option');
+        opt.value = f.nama; opt.textContent = f.nama;
+        sel.appendChild(opt);
+      });
+    }catch(e){ console.warn('Gagal memuat daftar fasilitas:', e); }
   }
 
-  async function simpanTambah(){
-    if(!db){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
+  function buatNomorResiOtomatis(){
+    const tgl = new Date();
+    const kode = tgl.getFullYear().toString().slice(2) + String(tgl.getMonth()+1).padStart(2,'0') + String(tgl.getDate()).padStart(2,'0');
+    const acak = Math.floor(1000 + Math.random()*9000);
+    return 'DST-' + kode + '-' + acak;
+  }
 
-    const nomor_resi = document.getElementById('tambahNomorResi').value;
-    const obat = document.getElementById('tambahObat').value.trim();
-    const asal = document.getElementById('tambahAsal').value.trim();
-    const tujuan = document.getElementById('tambahTujuan').value.trim();
-    const jumlah = parseInt(document.getElementById('tambahJumlah').value) || 0;
-    const kurir = document.getElementById('tambahKurir').value.trim();
-    const tanggal_kirim = document.getElementById('tambahTanggal').value;
-    const status = document.getElementById('tambahStatus').value;
+  // ---------- Buka / tutup modal ----------
+  async function bukaModalKirim(){
+    document.getElementById('dResi').value = buatNomorResiOtomatis();
+    document.getElementById('dAsal').value = '';
+    document.getElementById('dJumlah').value = '';
+    document.getElementById('dKurir').value = '';
+    document.getElementById('dTanggal').value = new Date().toISOString().slice(0,10);
+    document.getElementById('dStatus').value = 'persiapan';
 
-    if(!obat || !asal || !tujuan || !kurir || jumlah <= 0){
-      tampilkanToast('Nama Obat, Asal, Tujuan, Kurir wajib diisi dan Jumlah harus lebih dari 0.', true);
+    document.getElementById('kirimModal').classList.add('show');
+    await Promise.all([ muatDropdownObat(), muatDropdownTujuan() ]);
+  }
+  function tutupModalKirim(){
+    document.getElementById('kirimModal').classList.remove('show');
+  }
+
+  async function simpanDistribusi(){
+    const nomor_resi = document.getElementById('dResi').value.trim();
+    const obat = document.getElementById('dObat').value;
+    const asal = document.getElementById('dAsal').value.trim();
+    const tujuan = document.getElementById('dTujuan').value;
+    const jumlah = parseInt(document.getElementById('dJumlah').value) || 0;
+    const kurir = document.getElementById('dKurir').value.trim();
+    const tanggal_kirim = document.getElementById('dTanggal').value || null;
+    const status = document.getElementById('dStatus').value;
+
+    if(!nomor_resi || !obat || !asal || !tujuan || jumlah <= 0){
+      tampilkanToast('Nomor Resi, Obat, Asal, Tujuan, dan Jumlah wajib diisi dengan benar.', true);
       return;
     }
 
-    const { error } = await db.from('distribusi_obat').insert([
-      { nomor_resi, obat, asal, tujuan, jumlah, kurir, tanggal_kirim, status }
-    ]);
+    const payload = { nomor_resi, obat, asal, tujuan, jumlah, kurir, tanggal_kirim, status };
 
-    if(error){
-      console.error(error);
-      tampilkanToast('Gagal mengirim obat: ' + pesanErrorRamah(error), true);
-      return;
+    if(db && !modeDemo){
+      const { error } = await db.from('distribusi_obat').insert([payload]);
+      if(error){
+        tampilkanToast('Gagal menyimpan ke Supabase: ' + error.message, true);
+        return;
+      }
+      await loadDistribusi();
+    } else {
+      dataDistribusi.unshift({ id:'demo-'+Date.now(), ...payload });
+      renderTabel();
     }
 
-    tutupModalTambah();
-    await loadDataDistribusi();
-    tampilkanToast('Pengiriman "' + obat + '" berhasil disimpan');
+    tutupModalKirim();
+    tampilkanToast('Pengiriman "' + nomor_resi + '" berhasil dibuat' + (modeDemo ? ' (mode demo, belum tersimpan permanen).' : '.'));
   }
 
-  // ---------- EDIT ----------
-  function bukaModalEdit(id){
-    const item = dataDistribusi.find(o => o.id === id);
+  // ---------- Majukan status (klik badge) ----------
+  async function majukanStatus(id){
+    const item = dataDistribusi.find(d => String(d.id) === String(id));
     if(!item) return;
-    document.getElementById('editId').value = item.id;
-    document.getElementById('editNomorResi').value = item.nomor_resi;
-    document.getElementById('editObat').value = item.obat;
-    document.getElementById('editAsal').value = item.asal;
-    document.getElementById('editTujuan').value = item.tujuan;
-    document.getElementById('editJumlah').value = item.jumlah;
-    document.getElementById('editKurir').value = item.kurir;
-    document.getElementById('editTanggal').value = item.tanggal_kirim ? item.tanggal_kirim.slice(0,10) : '';
-    document.getElementById('editStatus').value = item.status;
-    document.getElementById('editModal').classList.add('show');
-  }
-
-  function tutupModalEdit(){
-    document.getElementById('editModal').classList.remove('show');
-  }
-
-  async function simpanEdit(){
-    if(!db){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
-    const id = document.getElementById('editId').value;
-    const obat = document.getElementById('editObat').value.trim();
-    const asal = document.getElementById('editAsal').value.trim();
-    const tujuan = document.getElementById('editTujuan').value.trim();
-    const jumlah = parseInt(document.getElementById('editJumlah').value) || 0;
-    const kurir = document.getElementById('editKurir').value.trim();
-    const tanggal_kirim = document.getElementById('editTanggal').value;
-    const status = document.getElementById('editStatus').value;
-
-    const { error } = await db
-      .from('distribusi_obat')
-      .update({ obat, asal, tujuan, jumlah, kurir, tanggal_kirim, status })
-      .eq('id', id);
-
-    if(error){
-      console.error(error);
-      tampilkanToast('Gagal menyimpan perubahan: ' + pesanErrorRamah(error), true);
+    if(item.status === 'dibatalkan' || item.status === 'diterima'){
+      tampilkanToast('Status sudah final, tidak bisa dimajukan lagi.', true);
       return;
     }
+    const idxSekarang = urutanStatus.indexOf(item.status);
+    const statusBaru = urutanStatus[idxSekarang + 1] || item.status;
 
-    tutupModalEdit();
-    await loadDataDistribusi();
-    tampilkanToast('Perubahan pada "' + obat + '" berhasil disimpan');
+    if(db && !modeDemo){
+      const { error } = await db.from('distribusi_obat').update({ status: statusBaru }).eq('id', id);
+      if(error){ tampilkanToast('Gagal memperbarui status: ' + error.message, true); return; }
+      await loadDistribusi();
+    } else {
+      item.status = statusBaru;
+      renderTabel();
+    }
+    tampilkanToast('Status "' + item.nomor_resi + '" diperbarui jadi "' + statusLabel[statusBaru] + '".');
   }
 
-  // ---------- HAPUS ----------
+  // ---------- Hapus ----------
   async function hapusDistribusi(id){
-    if(!db){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
-    const item = dataDistribusi.find(o => o.id === id);
+    const item = dataDistribusi.find(d => String(d.id) === String(id));
     if(!item) return;
-    const yakin = confirm('Hapus data distribusi "' + item.nomor_resi + '"? Tindakan ini tidak bisa dibatalkan.');
+    const yakin = confirm('Hapus data pengiriman "' + item.nomor_resi + '"?');
     if(!yakin) return;
 
-    const { error } = await db.from('distribusi_obat').delete().eq('id', id);
-
-    if(error){
-      console.error(error);
-      tampilkanToast('Gagal menghapus data: ' + pesanErrorRamah(error), true);
-      return;
+    if(db && !modeDemo){
+      const { error } = await db.from('distribusi_obat').delete().eq('id', id);
+      if(error){ tampilkanToast('Gagal menghapus: ' + error.message, true); return; }
+      await loadDistribusi();
+    } else {
+      dataDistribusi = dataDistribusi.filter(d => d.id !== id);
+      renderTabel();
     }
-
-    await loadDataDistribusi();
-    tampilkanToast('Data "' + item.nomor_resi + '" berhasil dihapus');
+    tampilkanToast('Data pengiriman "' + item.nomor_resi + '" berhasil dihapus');
   }
 
-  // ---------- Toast ----------
   function tampilkanToast(msg, isError){
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = 'toast' + (isError ? ' error' : '');
     t.style.display = 'block';
     clearTimeout(window._toastTimer);
-    window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 6000);
+    window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 5000);
   }
 
   // ---------- Mulai ----------
-  loadDataDistribusi();
+  loadDistribusi();
 </script>
 </body>
 </html>
