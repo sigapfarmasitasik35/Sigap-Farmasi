@@ -137,14 +137,18 @@
   /* ---------- Modal ---------- */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;}
   .modal-overlay.show{display:flex;}
-  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:460px;padding:24px;max-height:90vh;overflow-y:auto;}
-  .modal-box h3{font-size:18px;font-weight:700;margin-bottom:18px;}
-  .field{margin-bottom:14px;}
-  .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;}
-  .field input,.field select{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;}
-  .field input:focus,.field select:focus{border-color:var(--green);}
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:600px;padding:26px;max-height:90vh;overflow-y:auto;position:relative;}
+  .modal-box h3{font-size:19px;font-weight:700;margin-bottom:20px;}
+  .modal-close{position:absolute;top:22px;right:22px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;line-height:1;padding:4px;}
+  .modal-close:hover{color:var(--text);}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:7px;}
+  .field input,.field select,.field textarea{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;font-family:inherit;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);}
+  .field textarea{resize:vertical;min-height:64px;}
+  .field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393a1a0' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
 
   .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:10000;max-width:360px;}
   .toast.error{background:var(--red);color:#fff;}
@@ -153,6 +157,7 @@
     .sidebar{display:none;}
     .main{padding:14px;}
     .menu-toggle{display:flex;}
+    .field-row{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -219,7 +224,7 @@
         <h1>Kebutuhan Obat</h1>
         <p>Pantau permohonan obat dari daerah terdampak</p>
       </div>
-      <button class="btn-primary" onclick="ajukanKebutuhan()">
+      <button class="btn-primary" onclick="bukaModalAjukan()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         Ajukan Kebutuhan
       </button>
@@ -247,21 +252,38 @@
     </div>
   </main>
 
-  <!-- ========== MODAL AJUKAN KEBUTUHAN ========== -->
+  <!-- ========== MODAL PENGAJUAN KEBUTUHAN OBAT ========== -->
   <div class="modal-overlay" id="ajukanModal">
     <div class="modal-box">
-      <h3>Ajukan Kebutuhan Obat</h3>
-      <div class="field"><label>Nama Bencana</label><input type="text" id="kBencana" placeholder="Contoh: Banjir Tasikmalaya"></div>
+      <button class="modal-close" onclick="tutupModalAjukan()">✕</button>
+      <h3>Pengajuan Kebutuhan Obat</h3>
+
+      <div class="field-row">
+        <div class="field"><label>Nama Bencana</label><input type="text" id="kBencana" placeholder="Contoh: Gempa Lombok"></div>
+        <div class="field">
+          <label>Jenis Bencana</label>
+          <select id="kJenisBencana">
+            <option value="">Pilih Jenis</option>
+            <option value="banjir">Banjir</option>
+            <option value="gempa_bumi">Gempa Bumi</option>
+            <option value="tanah_longsor">Tanah Longsor</option>
+            <option value="kebakaran">Kebakaran</option>
+            <option value="puting_beliung">Angin Puting Beliung</option>
+            <option value="erupsi_gunung">Erupsi Gunung Berapi</option>
+            <option value="kekeringan">Kekeringan</option>
+            <option value="wabah_penyakit">Wabah Penyakit</option>
+            <option value="lainnya">Lainnya</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Fasilitas Kesehatan (Tujuan)</label>
+        <select id="kFaskes"><option value="">Memuat data fasilitas...</option></select>
+      </div>
+
       <div class="field-row">
         <div class="field"><label>Wilayah</label><input type="text" id="kWilayah" placeholder="Contoh: Tasikmalaya, Jawa Barat"></div>
-        <div class="field"><label>Faskes Tujuan</label><input type="text" id="kFaskes" placeholder="Contoh: Puskesmas Cihideung"></div>
-      </div>
-      <div class="field"><label>Nama Obat</label><input type="text" id="kObat" placeholder="Contoh: Oralit, Paracetamol"></div>
-      <div class="field-row">
-        <div class="field"><label>Jumlah Dibutuhkan</label><input type="number" min="0" id="kDibutuhkan" placeholder="100"></div>
-        <div class="field"><label>Jumlah Terpenuhi</label><input type="number" min="0" id="kTerpenuhi" placeholder="0" value="0"></div>
-      </div>
-      <div class="field-row">
         <div class="field">
           <label>Prioritas</label>
           <select id="kPrioritas">
@@ -270,18 +292,23 @@
             <option value="rendah">Rendah</option>
           </select>
         </div>
-        <div class="field">
-          <label>Status</label>
-          <select id="kStatus">
-            <option value="menunggu" selected>Menunggu</option>
-            <option value="diproses">Diproses</option>
-            <option value="terpenuhi">Terpenuhi</option>
-          </select>
-        </div>
       </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Obat yang Dibutuhkan</label>
+          <select id="kObat"><option value="">Memuat data obat...</option></select>
+        </div>
+        <div class="field"><label>Jumlah Dibutuhkan</label><input type="number" min="0" id="kDibutuhkan" placeholder="0" value="0"></div>
+      </div>
+
+      <div class="field"><label>Tanggal Kebutuhan</label><input type="date" id="kTanggal"></div>
+
+      <div class="field"><label>Catatan Tambahan</label><textarea id="kCatatan" placeholder="Opsional..."></textarea></div>
+
       <div class="modal-actions">
         <button class="btn-secondary" onclick="tutupModalAjukan()">Batal</button>
-        <button class="btn-primary" onclick="simpanKebutuhan()">Ajukan</button>
+        <button class="btn-primary" onclick="simpanKebutuhan()">Ajukan Kebutuhan</button>
       </div>
     </div>
   </div>
@@ -293,6 +320,8 @@
   // KONEKSI SUPABASE (opsional).
   // Kalau tabel "kebutuhan_obat" belum ada di Supabase, halaman ini
   // tetap berjalan memakai DATA CONTOH (mode demo, tidak permanen).
+  // Dropdown Fasilitas & Obat diambil otomatis dari tabel
+  // "fasilitas" dan "obat" yang sudah ada di Supabase.
   // =========================================================
   const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
@@ -309,10 +338,16 @@
   let dataKebutuhan = [];
   let modeDemo = true;
 
+  const jenisBencanaLabel = {
+    banjir:'Banjir', gempa_bumi:'Gempa Bumi', tanah_longsor:'Tanah Longsor',
+    kebakaran:'Kebakaran', puting_beliung:'Angin Puting Beliung',
+    erupsi_gunung:'Erupsi Gunung Berapi', kekeringan:'Kekeringan',
+    wabah_penyakit:'Wabah Penyakit', lainnya:'Lainnya'
+  };
   const prioritasLabel = { tinggi:'Tinggi', sedang:'Sedang', rendah:'Rendah' };
   const statusLabel = { menunggu:'Menunggu', diproses:'Diproses', terpenuhi:'Terpenuhi' };
 
-  // ---------- Muat data ----------
+  // ---------- Muat data kebutuhan ----------
   async function loadKebutuhan(){
     if(!db){ renderTabel(); return; }
     try{
@@ -367,16 +402,49 @@
     });
   }
 
-  // ---------- Tambah ----------
-  function ajukanKebutuhan(){
+  // ---------- Isi dropdown Fasilitas Kesehatan dari tabel "fasilitas" ----------
+  async function muatDropdownFaskes(){
+    const sel = document.getElementById('kFaskes');
+    sel.innerHTML = '<option value="">Pilih Fasilitas Kesehatan</option>';
+    if(!db) return;
+    try{
+      const { data, error } = await db.from('fasilitas').select('nama').order('nama', { ascending:true });
+      if(error || !data || data.length === 0) return;
+      data.forEach(f=>{
+        const opt = document.createElement('option');
+        opt.value = f.nama; opt.textContent = f.nama;
+        sel.appendChild(opt);
+      });
+    }catch(e){ console.warn('Gagal memuat daftar fasilitas:', e); }
+  }
+
+  // ---------- Isi dropdown Obat dari tabel "obat" ----------
+  async function muatDropdownObat(){
+    const sel = document.getElementById('kObat');
+    sel.innerHTML = '<option value="">Pilih Obat</option>';
+    if(!db) return;
+    try{
+      const { data, error } = await db.from('obat').select('nama').order('nama', { ascending:true });
+      if(error || !data || data.length === 0) return;
+      data.forEach(o=>{
+        const opt = document.createElement('option');
+        opt.value = o.nama; opt.textContent = o.nama;
+        sel.appendChild(opt);
+      });
+    }catch(e){ console.warn('Gagal memuat daftar obat:', e); }
+  }
+
+  // ---------- Buka / tutup modal ----------
+  function bukaModalAjukan(){
     document.getElementById('kBencana').value = '';
+    document.getElementById('kJenisBencana').value = '';
     document.getElementById('kWilayah').value = '';
-    document.getElementById('kFaskes').value = '';
-    document.getElementById('kObat').value = '';
-    document.getElementById('kDibutuhkan').value = '';
-    document.getElementById('kTerpenuhi').value = '0';
     document.getElementById('kPrioritas').value = 'sedang';
-    document.getElementById('kStatus').value = 'menunggu';
+    document.getElementById('kDibutuhkan').value = '0';
+    document.getElementById('kCatatan').value = '';
+    document.getElementById('kTanggal').value = new Date().toISOString().slice(0,10);
+    muatDropdownFaskes();
+    muatDropdownObat();
     document.getElementById('ajukanModal').classList.add('show');
   }
   function tutupModalAjukan(){
@@ -385,20 +453,25 @@
 
   async function simpanKebutuhan(){
     const bencana = document.getElementById('kBencana').value.trim();
+    const jenis_bencana = document.getElementById('kJenisBencana').value;
+    const faskes_tujuan = document.getElementById('kFaskes').value;
     const wilayah = document.getElementById('kWilayah').value.trim();
-    const faskes_tujuan = document.getElementById('kFaskes').value.trim();
-    const obat = document.getElementById('kObat').value.trim();
-    const jumlah_dibutuhkan = parseInt(document.getElementById('kDibutuhkan').value) || 0;
-    const jumlah_terpenuhi = parseInt(document.getElementById('kTerpenuhi').value) || 0;
     const prioritas = document.getElementById('kPrioritas').value;
-    const status = document.getElementById('kStatus').value;
+    const obat = document.getElementById('kObat').value;
+    const jumlah_dibutuhkan = parseInt(document.getElementById('kDibutuhkan').value) || 0;
+    const tanggal_kebutuhan = document.getElementById('kTanggal').value || null;
+    const catatan = document.getElementById('kCatatan').value.trim();
 
     if(!bencana || !wilayah || !obat || jumlah_dibutuhkan <= 0){
       tampilkanToast('Nama Bencana, Wilayah, Obat, dan Jumlah Dibutuhkan wajib diisi dengan benar.', true);
       return;
     }
 
-    const payload = { bencana, wilayah, faskes_tujuan, obat, jumlah_dibutuhkan, jumlah_terpenuhi, prioritas, status };
+    const payload = {
+      bencana, jenis_bencana, faskes_tujuan, wilayah, prioritas, obat,
+      jumlah_dibutuhkan, jumlah_terpenuhi:0, status:'menunggu',
+      tanggal_kebutuhan, catatan
+    };
 
     if(db && !modeDemo){
       const { error } = await db.from('kebutuhan_obat').insert([payload]);
