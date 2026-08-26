@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoring Stok — SIGAP-FARMASI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#080b12;
+    --panel:#0d1220;
+    --panel-2:#111827;
+    --border:#1c2333;
+    --text:#e7ebf3;
+    --text-dim:#8892a6;
+    --text-faint:#5b6478;
+    --amber:#f0a020;
+    --amber-dim:#7a5518;
+    --red:#f0483e;
+    --red-dim:#5a2420;
+    --green:#22c58b;
+    --green-dim:#123b2c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    display:flex;
+    min-height:100vh;
+  }
+  /* SIDEBAR */
+  .sidebar{
+    width:270px;
+    flex-shrink:0;
+    background:var(--panel);
+    border-right:1px solid var(--border);
+    padding:28px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .sidebar-label{
+    font-size:11px;
+    letter-spacing:1px;
+    color:var(--text-faint);
+    font-weight:600;
+    padding:8px 12px 10px;
+    margin-top:6px;
+  }
+  .sidebar a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 12px;
+    border-radius:10px;
+    color:var(--text-dim);
+    text-decoration:none;
+    font-size:14.5px;
+    font-weight:500;
+    border-left:3px solid transparent;
+    transition:background .15s;
+  }
+  .sidebar a:hover{ background:#131a28; color:var(--text); }
+  .sidebar a.active{
+    background:rgba(34,197,139,0.12);
+    color:var(--green);
+    border-left:3px solid var(--green);
+  }
+  .sidebar svg{ width:18px; height:18px; flex-shrink:0; }
+
+  /* MAIN */
+  .main{
+    flex:1;
+    padding:32px 40px;
+    max-width:1400px;
+  }
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:28px;
+  }
+  .topbar h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:-0.3px;
+  }
+  .topbar p{
+    color:var(--text-dim);
+    font-size:14px;
+    margin-top:4px;
+  }
+  .btn-export{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#141a29;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 18px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-export:hover{ background:#1a2233; border-color:#2a3348; }
+  .btn-export svg{ width:16px; height:16px; }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+  }
+  .search-wrap{
+    position:relative;
+    max-width:420px;
+    margin-bottom:22px;
+  }
+  .search-wrap svg{
+    position:absolute;
+    left:14px; top:50%;
+    transform:translateY(-50%);
+    width:16px; height:16px;
+    color:var(--text-faint);
+  }
+  #searchInput{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:11px 14px 11px 40px;
+    color:var(--text);
+    font-size:14px;
+    font-family:inherit;
+  }
+  #searchInput::placeholder{ color:var(--text-faint); }
+  #searchInput:focus{ outline:none; border-color:#33507a; }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+  }
+  thead th{
+    text-align:left;
+    font-size:11px;
+    letter-spacing:0.8px;
+    color:var(--text-faint);
+    font-weight:600;
+    padding:0 16px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  tbody td{
+    padding:16px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+    font-size:14.5px;
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  td.kode{ font-family:'IBM Plex Mono', monospace; color:var(--text-dim); font-size:13.5px; }
+  td.nama{ font-weight:600; }
+  td.nama.status-low{ color:var(--red); }
+  td.nama.status-warn{ color:var(--text); }
+  td.nama.status-ok{ color:var(--text); }
+  td.kategori{ color:var(--text-dim); }
+  td.lokasi{ color:var(--text-dim); }
+
+  .stock-cell{ min-width:170px; }
+  .stock-numbers{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-family:'IBM Plex Mono', monospace;
+    margin-bottom:6px;
+  }
+  .stock-value{ font-size:15px; font-weight:600; }
+  .stock-value.status-low{ color:var(--red); }
+  .stock-value.status-warn{ color:var(--amber); }
+  .stock-value.status-ok{ color:var(--green); }
+  .stock-min{ font-size:12px; color:var(--text-faint); }
+  .bar-bg{
+    width:100%;
+    height:5px;
+    border-radius:4px;
+    background:#1b2233;
+    overflow:hidden;
+  }
+  .bar-fill{ height:100%; border-radius:4px; }
+  .bar-fill.status-low{ background:var(--red); }
+  .bar-fill.status-warn{ background:var(--amber); }
+  .bar-fill.status-ok{ background:var(--green); }
+
+  @media (max-width: 900px){
+    .sidebar{ display:none; }
+    .main{ padding:20px; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-label">MENU UTAMA</div>
+  <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+  <a href="data-obat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="M3 12l9 5 9-5"/></svg>Data Obat</a>
+  <a href="fasilitas.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01"/></svg>Fasilitas Kesehatan</a>
+  <a href="kebutuhan-obat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>Kebutuhan Obat</a>
+  <a href="distribusi.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8Z"/><circle cx="5.5" cy="18.5" r="1.5"/><circle cx="18.5" cy="18.5" r="1.5"/></svg>Distribusi Obat</a>
+  <a href="monitoring-stok.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Monitoring Stok</a>
+
+  <div class="sidebar-label">LAINNYA</div>
+  <a href="manajemen-akun.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Manajemen Akun</a>
+  <a href="laporan.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>Laporan</a>
+  <a href="pengaturan.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>Pengaturan</a>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1>Monitoring Stok</h1>
+      <p>Pantau ketersediaan obat secara real-time</p>
+    </div>
+    <button class="btn-export" onclick="exportToExcel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+      Export Excel
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Cari obat..." oninput="filterTable()">
+    </div>
+
+    <table id="stockTable">
+      <thead>
+        <tr>
+          <th>KODE</th>
+          <th>NAMA OBAT</th>
+          <th>KATEGORI</th>
+          <th>STATUS STOK</th>
+          <th>LOKASI</th>
+        </tr>
+      </thead>
+      <tbody id="stockTableBody">
+        <!-- rows injected by JS -->
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+  // Data obat — ganti / hubungkan ke Supabase sesuai kebutuhan
+  const stokData = [
+    { kode:"OBT-006", nama:"Antasida Doen",        kategori:"Gastrointestinal",  stok:-500, min:1000, lokasi:"RSUPN dr. Cipto Mangunkusumo" },
+    { kode:"OBT-019", nama:"Serum Anti Bisa Ular",  kategori:"Emergensi",         stok:10,   min:20,   lokasi:"Kulkas Medis K2" },
+    { kode:"OBT-014", nama:"Oksigen Tabung Asam",   kategori:"Gas Medis",         stok:15,   min:50,   lokasi:"Gudang Bawah Tanah" },
+    { kode:"OBT-012", nama:"Epinephrine inj",       kategori:"Emergensi",         stok:50,   min:100,  lokasi:"RSUPN dr. Cipto Mangunkusumo" },
+    { kode:"OBT-018", nama:"Ointment Luka Bakar",   kategori:"Topikal",           stok:350,  min:200,  lokasi:"Gudang Utama B4" },
+    { kode:"OBT-007", nama:"Salep Gentamicin",      kategori:"Antibiotik Topikal",stok:400,  min:500,  lokasi:"Gudang Utama A4" },
+  ];
+
+  function getStatus(stok, min){
+    if (stok < min) return "low";
+    if (stok < min * 2) return "warn";
+    return "ok";
+  }
+
+  function getPercent(stok, min){
+    if (stok <= 0) return 0;
+    return Math.min(100, Math.max(0, (stok / min) * 100));
+  }
+
+  function renderTable(data){
+    const tbody = document.getElementById("stockTableBody");
+    tbody.innerHTML = "";
+    data.forEach(item => {
+      const status = getStatus(item.stok, item.min);
+      const percent = getPercent(item.stok, item.min);
+      const namaClass = status === "low" ? "status-low" : "status-ok";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="kode">${item.kode}</td>
+        <td class="nama ${namaClass}">${item.nama}</td>
+        <td class="kategori">${item.kategori}</td>
+        <td class="stock-cell">
+          <div class="stock-numbers">
+            <span class="stock-value status-${status}">${item.stok.toLocaleString('id-ID')}</span>
+            <span class="stock-min">min ${item.min.toLocaleString('id-ID')}</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill status-${status}" style="width:${percent}%"></div></div>
+        </td>
+        <td class="lokasi">${item.lokasi}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function filterTable(){
+    const q = document.getElementById("searchInput").value.toLowerCase();
+    const filtered = stokData.filter(item =>
+      item.nama.toLowerCase().includes(q) ||
+      item.kode.toLowerCase().includes(q) ||
+      item.kategori.toLowerCase().includes(q) ||
+      item.lokasi.toLowerCase().includes(q)
+    );
+    renderTable(filtered);
+  }
+
+  function exportToExcel(){
+    const rows = stokData.map(item => ({
+      Kode: item.kode,
+      "Nama Obat": item.nama,
+      Kategori: item.kategori,
+      Stok: item.stok,
+      "Stok Minimum": item.min,
+      Lokasi: item.lokasi
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Monitoring Stok");
+    XLSX.writeFile(wb, "monitoring-stok.xlsx");
+  }
+
+  renderTable(stokData);
+</script>
+
+</body>
+</html>
