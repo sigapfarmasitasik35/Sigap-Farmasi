@@ -3,38 +3,203 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Distribusi Obat — SIPHABEN</title>
+<title>SIPHABEN — Distribusi Obat</title>
 
-<!-- Supabase JS (CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <style>
   :root {
     --bg: #0b0f14;
+    --sidebar: #0d1319;
     --card: #111823;
     --border: rgba(255,255,255,0.07);
     --text: #e2e8f0;
     --muted: #64748b;
     --green: #10b981;
     --green-dark: #059669;
+    --green-soft: rgba(16,185,129,0.12);
   }
 
   * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
 
   body {
-    margin: 0;
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
   }
 
-  .wrap {
-    max-width: 1400px;
-    margin: 0 auto;
+  /* ===================== SIDEBAR ===================== */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--green);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .brand span {
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-section {
+    padding: 20px 12px 8px;
+  }
+
+  .nav-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0 10px 8px;
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    margin: 2px 0;
+    border-radius: 8px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+
+  .nav-item svg { flex-shrink: 0; }
+
+  .nav-item:hover {
+    background: rgba(255,255,255,0.03);
+    color: #e2e8f0;
+  }
+
+  .nav-item.active {
+    background: var(--green-soft);
+    color: var(--green);
+    border-left-color: var(--green);
+    margin-left: -3px;
+  }
+
+  .sidebar-spacer { flex: 1; }
+
+  /* ===================== TOPBAR ===================== */
+  .main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .icon-btn:hover { color: #fff; }
+
+  .global-search {
+    flex: 1;
+    max-width: 480px;
+    position: relative;
+  }
+
+  .global-search svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+  }
+
+  .global-search input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px 11px 40px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+  }
+  .global-search input:focus { border-color: rgba(16,185,129,0.4); }
+  .global-search input::placeholder { color: var(--muted); }
+
+  .topbar-spacer { flex: 1; }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  /* ===================== CONTENT ===================== */
+  .content {
     padding: 32px;
+    flex: 1;
   }
 
-  .header {
+  .page-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -43,14 +208,14 @@
     flex-wrap: wrap;
   }
 
-  .header h1 {
+  .page-header h1 {
     font-size: 24px;
     font-weight: 600;
     color: #fff;
     margin: 0;
   }
 
-  .header p {
+  .page-header p {
     color: rgba(16,185,129,0.85);
     font-size: 14px;
     margin: 4px 0 0;
@@ -115,9 +280,7 @@
     font-size: 14px;
   }
 
-  thead tr {
-    border-bottom: 1px solid var(--border);
-  }
+  thead tr { border-bottom: 1px solid var(--border); }
 
   thead th {
     text-align: left;
@@ -130,9 +293,7 @@
     white-space: nowrap;
   }
 
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-  }
+  tbody tr { border-bottom: 1px solid var(--border); }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: rgba(255,255,255,0.02); }
 
@@ -178,7 +339,7 @@
   }
   .action-link:hover { color: #34d399; }
 
-  /* Modal */
+  /* ===================== MODAL ===================== */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -297,58 +458,149 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width: 900px) {
+    .sidebar { position: fixed; left: -260px; z-index: 40; transition: left 0.2s ease; }
+    .sidebar.open { left: 0; }
+    .content { padding: 20px; }
+    .topbar { padding: 14px 16px; }
+  }
+
   @media (max-width: 640px) {
     .row-2 { grid-template-columns: 1fr; }
-    .wrap { padding: 16px; }
+    .global-search { display: none; }
   }
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <div class="header">
-    <div>
-      <h1>Distribusi Obat</h1>
-      <p>Lacak pengiriman logistik medis</p>
+<!-- ===================== SIDEBAR ===================== -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4.93 4.93a10 10 0 1 0 14.14 0M9 15l6-6"/></svg>
     </div>
-    <button class="btn-primary" id="btnOpenModal">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Kirim Obat
-    </button>
+    <span>SIPHABEN</span>
   </div>
 
-  <div class="card">
-    <div class="search-bar">
-      <div class="search-input-wrap">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="searchInput" placeholder="Cari nomor distribusi..." />
-      </div>
+  <div class="nav-section">
+    <div class="nav-label">MENU UTAMA</div>
+
+    <a class="nav-item" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.5 20.5 3.5 13.5a5 5 0 1 1 7-7l7 7a5 5 0 0 1-7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+      Data Obat
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1m-6 4h1m4 0h1m-6 4h1m4 0h1"/></svg>
+      Fasilitas Kesehatan
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.27 6.96 12 12l8.73-5.04M12 22.08V12"/></svg>
+      Kebutuhan Obat
+    </a>
+
+    <a class="nav-item active" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Distribusi Obat
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Monitoring Stok
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">LAINNYA</div>
+
+    <a class="nav-item" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Manajemen Akun
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1M3 10h18"/></svg>
+      Laporan
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+      Pengaturan
+    </a>
+  </div>
+
+  <div class="sidebar-spacer"></div>
+</aside>
+
+<!-- ===================== MAIN ===================== -->
+<div class="main">
+  <div class="topbar">
+    <button class="icon-btn" id="btnToggleSidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+
+    <div class="global-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Cari data..." />
     </div>
 
-    <div style="overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Nomor Resi</th>
-            <th>Obat</th>
-            <th>Asal</th>
-            <th>Tujuan</th>
-            <th>Jumlah</th>
-            <th>Kurir</th>
-            <th>Tanggal</th>
-            <th>Status</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <tr><td colspan="9" class="empty-state">Memuat data...</td></tr>
-        </tbody>
-      </table>
+    <div class="topbar-spacer"></div>
+
+    <div class="avatar">AD</div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <h1>Distribusi Obat</h1>
+        <p>Lacak pengiriman logistik medis</p>
+      </div>
+      <button class="btn-primary" id="btnOpenModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Kirim Obat
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Cari nomor distribusi..." />
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Nomor Resi</th>
+              <th>Obat</th>
+              <th>Asal</th>
+              <th>Tujuan</th>
+              <th>Jumlah</th>
+              <th>Kurir</th>
+              <th>Tanggal</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="9" class="empty-state">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Kirim Obat -->
+<!-- ===================== MODAL KIRIM OBAT ===================== -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-header">
@@ -437,6 +689,10 @@
 
   document.getElementById("f_tanggal").value = new Date().toISOString().slice(0, 10);
 
+  document.getElementById("btnToggleSidebar").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("open");
+  });
+
   function formatTanggal(dateStr) {
     if (!dateStr) return "-";
     const d = new Date(dateStr);
@@ -469,7 +725,6 @@
       </tr>
     `).join("");
 
-    // pasang event listener untuk update status
     tableBody.querySelectorAll(".status-badge").forEach(select => {
       select.addEventListener("change", async (e) => {
         const id = e.target.dataset.id;
@@ -510,7 +765,6 @@
 
   searchInput.addEventListener("input", applyFilter);
 
-  // Modal open/close
   document.getElementById("btnOpenModal").addEventListener("click", () => {
     modalOverlay.classList.add("open");
   });
@@ -524,14 +778,12 @@
     if (e.target === modalOverlay) closeModal();
   });
 
-  // Submit form -> insert ke Supabase
   kirimForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     formError.innerHTML = "";
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = `<span class="spinner"></span>Menyimpan...`;
 
-    // generate nomor resi via fungsi SQL
     const { data: resi, error: resiErr } = await db.rpc("generate_nomor_resi");
     if (resiErr) {
       formError.innerHTML = `<div class="error-box">${resiErr.message}</div>`;
@@ -567,7 +819,6 @@
     fetchData();
   });
 
-  // Realtime: refresh otomatis kalau ada perubahan data dari device lain
   db.channel("distribusi_obat_changes")
     .on("postgres_changes", { event: "*", schema: "public", table: "distribusi_obat" }, fetchData)
     .subscribe();
