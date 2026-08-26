@@ -83,6 +83,8 @@
   .btn-primary:hover{opacity:.9;}
   .btn-secondary{display:flex;align-items:center;gap:8px;background:var(--panel-2);color:var(--text);border:1px solid var(--border);padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;}
   .btn-secondary:hover{border-color:var(--text-faint);}
+  .btn-tambah-obat{display:inline-flex;align-items:center;gap:6px;background:none;border:1px dashed var(--border);color:var(--green);padding:8px 13px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;margin-top:4px;}
+  .btn-tambah-obat:hover{border-color:var(--green);background:var(--green-soft);}
 
   .content{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:14px;}
 
@@ -137,7 +139,7 @@
   /* ---------- Modal ---------- */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;}
   .modal-overlay.show{display:flex;}
-  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:600px;padding:26px;max-height:90vh;overflow-y:auto;position:relative;}
+  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:620px;padding:26px;max-height:90vh;overflow-y:auto;position:relative;}
   .modal-box h3{font-size:19px;font-weight:700;margin-bottom:20px;}
   .modal-close{position:absolute;top:22px;right:22px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;line-height:1;padding:4px;}
   .modal-close:hover{color:var(--text);}
@@ -150,6 +152,13 @@
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
 
+  /* ---------- Daftar obat multi-baris ---------- */
+  .obat-row{display:grid;grid-template-columns:1fr 100px 34px;gap:8px;margin-bottom:8px;align-items:center;}
+  .obat-row select, .obat-row input{margin:0;}
+  .obat-hapus{width:34px;height:38px;flex-shrink:0;border-radius:8px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-dim);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .obat-hapus:hover{color:var(--red);border-color:var(--red);}
+  .obat-hapus:disabled{opacity:.35;cursor:not-allowed;}
+
   .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:10000;max-width:360px;}
   .toast.error{background:var(--red);color:#fff;}
 
@@ -158,6 +167,7 @@
     .main{padding:14px;}
     .menu-toggle{display:flex;}
     .field-row{grid-template-columns:1fr;}
+    .obat-row{grid-template-columns:1fr 80px 34px;}
   }
 </style>
 </head>
@@ -294,12 +304,10 @@
         </div>
       </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label>Obat yang Dibutuhkan</label>
-          <select id="kObat"><option value="">Memuat data obat...</option></select>
-        </div>
-        <div class="field"><label>Jumlah Dibutuhkan</label><input type="number" min="0" id="kDibutuhkan" placeholder="0" value="0"></div>
+      <div class="field">
+        <label>Obat yang Dibutuhkan</label>
+        <div id="daftarObatWrap"></div>
+        <button type="button" class="btn-tambah-obat" onclick="tambahBarisObat()">+ Tambah Obat</button>
       </div>
 
       <div class="field"><label>Tanggal Kebutuhan</label><input type="date" id="kTanggal"></div>
@@ -337,17 +345,13 @@
 
   let dataKebutuhan = [];
   let modeDemo = true;
+  let opsiObatHTML = '<option value="">Pilih Obat</option>';
+  let idBarisObat = 0;
 
-  const jenisBencanaLabel = {
-    banjir:'Banjir', gempa_bumi:'Gempa Bumi', tanah_longsor:'Tanah Longsor',
-    kebakaran:'Kebakaran', puting_beliung:'Angin Puting Beliung',
-    erupsi_gunung:'Erupsi Gunung Berapi', kekeringan:'Kekeringan',
-    wabah_penyakit:'Wabah Penyakit', lainnya:'Lainnya'
-  };
   const prioritasLabel = { tinggi:'Tinggi', sedang:'Sedang', rendah:'Rendah' };
   const statusLabel = { menunggu:'Menunggu', diproses:'Diproses', terpenuhi:'Terpenuhi' };
 
-  // ---------- Muat data kebutuhan ----------
+  // ---------- Muat data kebutuhan (tabel utama) ----------
   async function loadKebutuhan(){
     if(!db){ renderTabel(); return; }
     try{
@@ -418,34 +422,69 @@
     }catch(e){ console.warn('Gagal memuat daftar fasilitas:', e); }
   }
 
-  // ---------- Isi dropdown Obat dari tabel "obat" ----------
-  async function muatDropdownObat(){
-    const sel = document.getElementById('kObat');
-    sel.innerHTML = '<option value="">Pilih Obat</option>';
+  // ---------- Siapkan opsi dropdown Obat dari tabel "obat" (dipakai berulang di tiap baris) ----------
+  async function muatOpsiObat(){
+    opsiObatHTML = '<option value="">Pilih Obat</option>';
     if(!db) return;
     try{
       const { data, error } = await db.from('obat').select('nama').order('nama', { ascending:true });
       if(error || !data || data.length === 0) return;
       data.forEach(o=>{
-        const opt = document.createElement('option');
-        opt.value = o.nama; opt.textContent = o.nama;
-        sel.appendChild(opt);
+        opsiObatHTML += `<option value="${o.nama}">${o.nama}</option>`;
       });
     }catch(e){ console.warn('Gagal memuat daftar obat:', e); }
   }
 
+  // ---------- Baris obat (bisa lebih dari satu) ----------
+  function tambahBarisObat(){
+    idBarisObat++;
+    const rowId = 'baris-' + idBarisObat;
+    const wrap = document.getElementById('daftarObatWrap');
+    const div = document.createElement('div');
+    div.className = 'obat-row';
+    div.id = rowId;
+    div.innerHTML = `
+      <select class="obat-select">${opsiObatHTML}</select>
+      <input type="number" class="obat-jumlah" min="0" placeholder="Jumlah" value="0">
+      <button type="button" class="obat-hapus" onclick="hapusBarisObat('${rowId}')">✕</button>
+    `;
+    wrap.appendChild(div);
+    perbaruiTombolHapusObat();
+  }
+
+  function hapusBarisObat(rowId){
+    const wrap = document.getElementById('daftarObatWrap');
+    if(wrap.children.length <= 1) return; // minimal harus ada 1 baris
+    document.getElementById(rowId)?.remove();
+    perbaruiTombolHapusObat();
+  }
+
+  // Nonaktifkan tombol hapus kalau cuma tersisa 1 baris, supaya form tidak kosong sama sekali
+  function perbaruiTombolHapusObat(){
+    const wrap = document.getElementById('daftarObatWrap');
+    const tombolHapus = wrap.querySelectorAll('.obat-hapus');
+    tombolHapus.forEach(btn => { btn.disabled = wrap.children.length <= 1; });
+  }
+
+  function resetDaftarObat(){
+    document.getElementById('daftarObatWrap').innerHTML = '';
+    idBarisObat = 0;
+    tambahBarisObat();
+  }
+
   // ---------- Buka / tutup modal ----------
-  function bukaModalAjukan(){
+  async function bukaModalAjukan(){
     document.getElementById('kBencana').value = '';
     document.getElementById('kJenisBencana').value = '';
     document.getElementById('kWilayah').value = '';
     document.getElementById('kPrioritas').value = 'sedang';
-    document.getElementById('kDibutuhkan').value = '0';
     document.getElementById('kCatatan').value = '';
     document.getElementById('kTanggal').value = new Date().toISOString().slice(0,10);
-    muatDropdownFaskes();
-    muatDropdownObat();
+
     document.getElementById('ajukanModal').classList.add('show');
+
+    await Promise.all([ muatDropdownFaskes(), muatOpsiObat() ]);
+    resetDaftarObat();
   }
   function tutupModalAjukan(){
     document.getElementById('ajukanModal').classList.remove('show');
@@ -457,43 +496,65 @@
     const faskes_tujuan = document.getElementById('kFaskes').value;
     const wilayah = document.getElementById('kWilayah').value.trim();
     const prioritas = document.getElementById('kPrioritas').value;
-    const obat = document.getElementById('kObat').value;
-    const jumlah_dibutuhkan = parseInt(document.getElementById('kDibutuhkan').value) || 0;
     const tanggal_kebutuhan = document.getElementById('kTanggal').value || null;
     const catatan = document.getElementById('kCatatan').value.trim();
 
-    if(!bencana || !wilayah || !obat || jumlah_dibutuhkan <= 0){
-      tampilkanToast('Nama Bencana, Wilayah, Obat, dan Jumlah Dibutuhkan wajib diisi dengan benar.', true);
+    if(!bencana || !wilayah){
+      tampilkanToast('Nama Bencana dan Wilayah wajib diisi.', true);
       return;
     }
 
-    const payload = {
-      bencana, jenis_bencana, faskes_tujuan, wilayah, prioritas, obat,
-      jumlah_dibutuhkan, jumlah_terpenuhi:0, status:'menunggu',
-      tanggal_kebutuhan, catatan
-    };
+    // Kumpulkan semua baris obat yang terisi lengkap (obat dipilih + jumlah > 0)
+    const barisObat = Array.from(document.querySelectorAll('#daftarObatWrap .obat-row'));
+    const daftarItemObat = [];
+    let adaBarisTidakLengkap = false;
+
+    barisObat.forEach(row=>{
+      const obat = row.querySelector('.obat-select').value;
+      const jumlah = parseInt(row.querySelector('.obat-jumlah').value) || 0;
+      if(obat && jumlah > 0){
+        daftarItemObat.push({ obat, jumlah_dibutuhkan: jumlah });
+      } else if(obat || jumlah > 0){
+        adaBarisTidakLengkap = true; // salah satu diisi, satunya kosong
+      }
+    });
+
+    if(daftarItemObat.length === 0){
+      tampilkanToast('Isi minimal 1 obat beserta jumlahnya.', true);
+      return;
+    }
+    if(adaBarisTidakLengkap){
+      tampilkanToast('Ada baris obat yang belum lengkap (obat atau jumlah kosong). Baris itu diabaikan.', true);
+    }
+
+    // Setiap obat disimpan sebagai satu baris pengajuan, dengan info bencana yang sama
+    const daftarPayload = daftarItemObat.map(item => ({
+      bencana, jenis_bencana, faskes_tujuan, wilayah, prioritas,
+      obat: item.obat, jumlah_dibutuhkan: item.jumlah_dibutuhkan, jumlah_terpenuhi:0,
+      status:'menunggu', tanggal_kebutuhan, catatan
+    }));
 
     if(db && !modeDemo){
-      const { error } = await db.from('kebutuhan_obat').insert([payload]);
+      const { error } = await db.from('kebutuhan_obat').insert(daftarPayload);
       if(error){
         tampilkanToast('Gagal menyimpan ke Supabase: ' + error.message, true);
         return;
       }
       await loadKebutuhan();
     } else {
-      dataKebutuhan.unshift({ id:'demo-'+Date.now(), ...payload });
+      daftarPayload.forEach(p => dataKebutuhan.unshift({ id:'demo-'+Date.now()+'-'+Math.random().toString(36).slice(2,6), ...p }));
       renderTabel();
     }
 
     tutupModalAjukan();
-    tampilkanToast('Kebutuhan "' + bencana + '" berhasil diajukan' + (modeDemo ? ' (mode demo, belum tersimpan permanen).' : '.'));
+    tampilkanToast('Kebutuhan "' + bencana + '" berhasil diajukan dengan ' + daftarPayload.length + ' jenis obat' + (modeDemo ? ' (mode demo, belum tersimpan permanen).' : '.'));
   }
 
   // ---------- Perbarui jumlah terpenuhi ----------
   async function perbaruiPemenuhan(id){
     const item = dataKebutuhan.find(k => String(k.id) === String(id));
     if(!item) return;
-    const nilaiBaru = prompt('Update jumlah obat yang sudah terpenuhi untuk "' + item.bencana + '" (dari total ' + item.jumlah_dibutuhkan + '):', item.jumlah_terpenuhi);
+    const nilaiBaru = prompt('Update jumlah "' + item.obat + '" yang sudah terpenuhi untuk "' + item.bencana + '" (dari total ' + item.jumlah_dibutuhkan + '):', item.jumlah_terpenuhi);
     if(nilaiBaru === null) return;
     const angka = parseInt(nilaiBaru);
     if(isNaN(angka) || angka < 0){
@@ -511,7 +572,7 @@
       item.status = statusBaru;
       renderTabel();
     }
-    tampilkanToast('Pemenuhan untuk "' + item.bencana + '" diperbarui.');
+    tampilkanToast('Pemenuhan "' + item.obat + '" untuk "' + item.bencana + '" diperbarui.');
   }
 
   // ---------- Hapus ----------
