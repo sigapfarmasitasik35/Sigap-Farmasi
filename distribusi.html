@@ -251,17 +251,20 @@
         <div class="field-hint">Nomor resi dibuat otomatis, tapi bisa diubah manual kalau perlu.</div>
       </div>
 
-      <div class="field"><label>Obat</label><select id="dObat"><option value="">Memuat data obat...</option></select></div>
+      <div class="field">
+  <label>Daftar Obat</label>
+  <div id="daftarObatKirim"></div>
+  <button type="button" class="btn-secondary" style="margin-top:8px;" onclick="tambahBarisObat()">+ Tambah Obat</button>
+</div>
 
-      <div class="field-row">
-        <div class="field"><label>Asal</label><input type="text" id="dAsal" placeholder="Contoh: Gudang Pusat Dinkes"></div>
-        <div class="field"><label>Tujuan</label><select id="dTujuan"><option value="">Memuat data fasilitas...</option></select></div>
-      </div>
+<div class="field-row">
+  <div class="field"><label>Asal</label><input type="text" id="dAsal" placeholder="Contoh: Gudang Pusat Dinkes"></div>
+  <div class="field"><label>Tujuan</label><select id="dTujuan"><option value="">Memuat data fasilitas...</option></select></div>
+</div>
 
-      <div class="field-row">
-        <div class="field"><label>Jumlah</label><input type="number" min="1" id="dJumlah" placeholder="0"></div>
-        <div class="field"><label>Kurir</label><input type="text" id="dKurir" placeholder="Contoh: Budi / JNE Logistik"></div>
-      </div>
+<div class="field">
+  <label>Kurir</label><input type="text" id="dKurir" placeholder="Contoh: Budi / JNE Logistik">
+</div>
 
       <div class="field-row">
         <div class="field"><label>Tanggal Kirim</label><input type="date" id="dTanggal"></div>
