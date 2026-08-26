@@ -93,7 +93,7 @@
   .nomor-resi{color:var(--amber);font-weight:600;font-family:'IBM Plex Mono',monospace;}
 
   .badge{display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px;white-space:nowrap;cursor:pointer;}
-  .status-persiapan{background:var(--amber-soft);color:var(--amber);}
+  .status-menunggu{background:var(--amber-soft);color:var(--amber);}
   .status-dikirim{background:var(--blue-soft);color:var(--blue);}
   .status-diterima{background:var(--green-soft);color:var(--green);}
   .status-dibatalkan{background:var(--red-soft);color:#f0938a;}
@@ -268,10 +268,10 @@
         <div class="field">
           <label>Status</label>
           <select id="dStatus">
-            <option value="persiapan" selected>Persiapan</option>
-            <option value="dikirim">Dikirim</option>
-            <option value="diterima">Diterima</option>
-            <option value="dibatalkan">Dibatalkan</option>
+            <option value="Menunggu" selected>Menunggu</option>
+            <option value="Dikirim">Dikirim</option>
+            <option value="Diterima">Diterima</option>
+            <option value="Dibatalkan">Dibatalkan</option>
           </select>
         </div>
       </div>
@@ -308,8 +308,8 @@
   let dataDistribusi = [];
   let modeDemo = true;
 
-  const statusLabel = { persiapan:'Persiapan', dikirim:'Dikirim', diterima:'Diterima', dibatalkan:'Dibatalkan' };
-  const urutanStatus = ['persiapan','dikirim','diterima'];
+  const statusLabel = { Menunggu:'Menunggu', Dikirim:'Dikirim', Diterima:'Diterima', Dibatalkan:'Dibatalkan' };
+  const urutanStatus = ['Menunggu','Dikirim','Diterima'];
 
   async function loadDistribusi(){
     if(!db){ renderTabel(); return; }
@@ -350,7 +350,7 @@
         <td>${d.jumlah ?? '-'}</td>
         <td>${d.kurir || '-'}</td>
         <td>${tgl}</td>
-        <td><span class="badge status-${d.status}" title="Klik untuk ubah ke tahap berikutnya" onclick="majukanStatus('${d.id}')">${statusLabel[d.status] || d.status}</span></td>
+        <td><span class="badge status-${(d.status||'').toLowerCase()}" title="Klik untuk ubah ke tahap berikutnya" onclick="majukanStatus('${d.id}')">${statusLabel[d.status] || d.status}</span></td>
         <td class="aksi">
           <button class="del" title="Hapus" onclick="hapusDistribusi('${d.id}')">🗑</button>
         </td>`;
@@ -390,9 +390,9 @@
 
   function buatNomorResiOtomatis(){
     const tgl = new Date();
-    const kode = tgl.getFullYear().toString().slice(2) + String(tgl.getMonth()+1).padStart(2,'0') + String(tgl.getDate()).padStart(2,'0');
+    const kode = tgl.getFullYear().toString() + String(tgl.getMonth()+1).padStart(2,'0') + String(tgl.getDate()).padStart(2,'0');
     const acak = Math.floor(1000 + Math.random()*9000);
-    return 'DST-' + kode + '-' + acak;
+    return 'DIST-' + kode + '-' + acak;
   }
 
   async function bukaModalKirim(){
@@ -401,7 +401,7 @@
     document.getElementById('dJumlah').value = '';
     document.getElementById('dKurir').value = '';
     document.getElementById('dTanggal').value = new Date().toISOString().slice(0,10);
-    document.getElementById('dStatus').value = 'persiapan';
+    document.getElementById('dStatus').value = 'Menunggu';
 
     document.getElementById('kirimModal').classList.add('show');
     await Promise.all([ muatDropdownObat(), muatDropdownTujuan() ]);
@@ -446,7 +446,7 @@
   async function majukanStatus(id){
     const item = dataDistribusi.find(d => String(d.id) === String(id));
     if(!item) return;
-    if(item.status === 'dibatalkan' || item.status === 'diterima'){
+    if(item.status === 'Dibatalkan' || item.status === 'Diterima'){
       tampilkanToast('Status sudah final, tidak bisa dimajukan lagi.', true);
       return;
     }
