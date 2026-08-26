@@ -108,7 +108,7 @@
     background:var(--panel);border:1px solid var(--border);border-radius:12px;
     overflow:auto; flex-shrink:0;
   }
-  table{width:100%;min-width:760px;border-collapse:collapse;}
+  table{width:100%;min-width:900px;border-collapse:collapse;}
   thead th{
     text-align:left;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-faint);
     padding:10px 16px;border-bottom:1px solid var(--border); white-space:nowrap;
@@ -142,7 +142,15 @@
   .field input:focus,.field select:focus{border-color:var(--green);}
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .field-hint{font-size:11.5px;color:var(--text-faint);margin-top:5px;}
+  .field-hint.auto-ok{color:var(--green);}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+
+  /* input number lat/long -> tampilkan spinner naik/turun (browser default) */
+  .field input[type="number"]{-moz-appearance:textfield;}
+  .field input[type="number"]::-webkit-inner-spin-button,
+  .field input[type="number"]::-webkit-outer-spin-button{
+    opacity:1; /* pastikan panah spinner tetap terlihat di tema gelap */
+  }
 
   .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:10000;max-width:360px;}
   .toast.error{background:var(--red);color:#fff;}
@@ -236,7 +244,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Nama Fasilitas</th><th>Tipe</th><th>Wilayah</th><th>Kontak</th><th>Aksi</th></tr>
+            <tr><th>Nama Fasilitas</th><th>Tipe</th><th>Wilayah</th><th>Kab/Kota</th><th>Provinsi</th><th>Kontak</th><th>Aksi</th></tr>
           </thead>
           <tbody id="tabelFasilitas"></tbody>
         </table>
@@ -261,10 +269,14 @@
         <div class="field"><label>Wilayah</label><input type="text" id="fWilayah" placeholder="Contoh: Cianjur, Jawa Barat"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Latitude</label><input type="text" id="fLat" placeholder="-6.8161"></div>
-        <div class="field"><label>Longitude</label><input type="text" id="fLng" placeholder="107.1425"></div>
+        <div class="field"><label>Kabupaten/Kota</label><input type="text" id="fKabkota" placeholder="Contoh: Tasikmalaya" oninput="isiOtomatisKoordinat()" onblur="isiOtomatisKoordinat()"></div>
+        <div class="field"><label>Provinsi</label><input type="text" id="fProvinsi" placeholder="Contoh: Jawa Barat"></div>
       </div>
-      <div class="field-hint">Tips: buka Google Maps, klik kanan pada lokasi di peta, koordinatnya akan muncul untuk disalin.</div>
+      <div class="field-row">
+        <div class="field"><label>Latitude</label><input type="number" step="0.000001" id="fLat" placeholder="-6.8161"></div>
+        <div class="field"><label>Longitude</label><input type="number" step="0.000001" id="fLng" placeholder="107.1425"></div>
+      </div>
+      <div class="field-hint" id="fLatLngHint">Latitude/Longitude terisi otomatis begitu Kabupaten/Kota dikenali, dan tetap bisa diubah manual (pakai panah naik/turun atau ketik langsung). Jika tidak dikenali: buka Google Maps, klik kanan pada lokasi, salin koordinatnya ke sini.</div>
       <div class="field" style="margin-top:14px;"><label>Kontak (Opsional)</label><input type="text" id="fKontak" placeholder="Nomor telepon / PIC"></div>
       <div class="modal-actions">
         <button class="btn-secondary" onclick="tutupModalTambah()">Batal</button>
@@ -297,13 +309,205 @@
 
   // ---------- Data contoh (dipakai kalau tabel "fasilitas" belum ada) ----------
   let dataFasilitas = [
-    { id:'demo-1', nama:'Puskesmas Jakarta Pusat', tipe:'puskesmas', wilayah:'Jakarta', kontak:'021-xxxxxxx', lat:-6.1944, lng:106.8229 },
-    { id:'demo-2', nama:'RSUD Surabaya', tipe:'rumahsakit', wilayah:'Surabaya', kontak:'031-xxxxxxx', lat:-7.2575, lng:112.7521 },
-    { id:'demo-3', nama:'Posko Darurat Kalimantan', tipe:'posko', wilayah:'Kalimantan', kontak:'-', lat:0.0236, lng:114.7188 }
+    { id:'demo-1', nama:'Puskesmas Jakarta Pusat', tipe:'puskesmas', wilayah:'Jakarta', kabkota:'Jakarta Pusat', provinsi:'DKI Jakarta', kontak:'021-xxxxxxx', lat:-6.1944, lng:106.8229 },
+    { id:'demo-2', nama:'RSUD Surabaya', tipe:'rumahsakit', wilayah:'Surabaya', kabkota:'Surabaya', provinsi:'Jawa Timur', kontak:'031-xxxxxxx', lat:-7.2575, lng:112.7521 },
+    { id:'demo-3', nama:'Posko Darurat Kalimantan', tipe:'posko', wilayah:'Kalimantan', kabkota:'', provinsi:'Kalimantan Tengah', kontak:'-', lat:0.0236, lng:114.7188 }
   ];
   let modeDemo = true;
 
   const tipeLabel = { puskesmas:'Puskesmas', rumahsakit:'Rumah Sakit', posko:'Posko Darurat' };
+
+  // =========================================================
+  // DATASET KOORDINAT KABUPATEN/KOTA (perkiraan titik pusat kota).
+  // Dipakai untuk isi otomatis Latitude/Longitude & Provinsi saat
+  // pengguna mengetik nama Kabupaten/Kota. Belum mencakup seluruh
+  // 514 kabupaten/kota di Indonesia — kalau tidak ditemukan,
+  // pengguna tetap bisa isi manual (lihat hint di bawah field).
+  // =========================================================
+  const koordinatKabKota = {
+    // Ibu kota provinsi
+    'banda aceh': { lat:5.5483, lng:95.3238, provinsi:'Aceh' },
+    'medan': { lat:3.5952, lng:98.6722, provinsi:'Sumatera Utara' },
+    'padang': { lat:-0.9471, lng:100.4172, provinsi:'Sumatera Barat' },
+    'pekanbaru': { lat:0.5071, lng:101.4478, provinsi:'Riau' },
+    'tanjung pinang': { lat:0.9186, lng:104.4562, provinsi:'Kepulauan Riau' },
+    'jambi': { lat:-1.6101, lng:103.6131, provinsi:'Jambi' },
+    'palembang': { lat:-2.9761, lng:104.7754, provinsi:'Sumatera Selatan' },
+    'pangkal pinang': { lat:-2.1316, lng:106.1169, provinsi:'Kepulauan Bangka Belitung' },
+    'bengkulu': { lat:-3.7928, lng:102.2608, provinsi:'Bengkulu' },
+    'bandar lampung': { lat:-5.4292, lng:105.2610, provinsi:'Lampung' },
+    'jakarta pusat': { lat:-6.1805, lng:106.8284, provinsi:'DKI Jakarta' },
+    'jakarta utara': { lat:-6.1387, lng:106.8650, provinsi:'DKI Jakarta' },
+    'jakarta barat': { lat:-6.1683, lng:106.7588, provinsi:'DKI Jakarta' },
+    'jakarta selatan': { lat:-6.2615, lng:106.8106, provinsi:'DKI Jakarta' },
+    'jakarta timur': { lat:-6.2250, lng:106.9004, provinsi:'DKI Jakarta' },
+    'kepulauan seribu': { lat:-5.7500, lng:106.5833, provinsi:'DKI Jakarta' },
+    'jakarta': { lat:-6.2088, lng:106.8456, provinsi:'DKI Jakarta' },
+    'serang': { lat:-6.1149, lng:106.1503, provinsi:'Banten' },
+    'bandung': { lat:-6.9175, lng:107.6191, provinsi:'Jawa Barat' },
+    'semarang': { lat:-6.9667, lng:110.4167, provinsi:'Jawa Tengah' },
+    'yogyakarta': { lat:-7.7956, lng:110.3695, provinsi:'DI Yogyakarta' },
+    'surabaya': { lat:-7.2575, lng:112.7521, provinsi:'Jawa Timur' },
+    'denpasar': { lat:-8.6705, lng:115.2126, provinsi:'Bali' },
+    'mataram': { lat:-8.5833, lng:116.1167, provinsi:'Nusa Tenggara Barat' },
+    'kupang': { lat:-10.1772, lng:123.6070, provinsi:'Nusa Tenggara Timur' },
+    'pontianak': { lat:-0.0263, lng:109.3425, provinsi:'Kalimantan Barat' },
+    'palangka raya': { lat:-2.2096, lng:113.9213, provinsi:'Kalimantan Tengah' },
+    'banjarmasin': { lat:-3.3194, lng:114.5908, provinsi:'Kalimantan Selatan' },
+    'samarinda': { lat:-0.5022, lng:117.1536, provinsi:'Kalimantan Timur' },
+    'tanjung selor': { lat:2.8386, lng:117.3609, provinsi:'Kalimantan Utara' },
+    'manado': { lat:1.4748, lng:124.8421, provinsi:'Sulawesi Utara' },
+    'palu': { lat:-0.8917, lng:119.8707, provinsi:'Sulawesi Tengah' },
+    'makassar': { lat:-5.1477, lng:119.4327, provinsi:'Sulawesi Selatan' },
+    'kendari': { lat:-3.9450, lng:122.4989, provinsi:'Sulawesi Tenggara' },
+    'gorontalo': { lat:0.5435, lng:123.0568, provinsi:'Gorontalo' },
+    'mamuju': { lat:-2.6785, lng:118.8879, provinsi:'Sulawesi Barat' },
+    'ambon': { lat:-3.6954, lng:128.1814, provinsi:'Maluku' },
+    'sofifi': { lat:0.7373, lng:127.4874, provinsi:'Maluku Utara' },
+    'jayapura': { lat:-2.5337, lng:140.7181, provinsi:'Papua' },
+    'manokwari': { lat:-0.8615, lng:134.0621, provinsi:'Papua Barat' },
+
+    // Jawa Barat
+    'bogor': { lat:-6.5944, lng:106.7891, provinsi:'Jawa Barat' },
+    'kota bogor': { lat:-6.5971, lng:106.8060, provinsi:'Jawa Barat' },
+    'bekasi': { lat:-6.2383, lng:107.0000, provinsi:'Jawa Barat' },
+    'tasikmalaya': { lat:-7.3274, lng:108.2207, provinsi:'Jawa Barat' },
+    'cianjur': { lat:-6.8161, lng:107.1425, provinsi:'Jawa Barat' },
+    'sukabumi': { lat:-6.9277, lng:106.9300, provinsi:'Jawa Barat' },
+    'garut': { lat:-7.2148, lng:107.9088, provinsi:'Jawa Barat' },
+    'cirebon': { lat:-6.7063, lng:108.5571, provinsi:'Jawa Barat' },
+    'depok': { lat:-6.4025, lng:106.7942, provinsi:'Jawa Barat' },
+    'sumedang': { lat:-6.8383, lng:107.9282, provinsi:'Jawa Barat' },
+    'karawang': { lat:-6.3227, lng:107.3376, provinsi:'Jawa Barat' },
+    'purwakarta': { lat:-6.5569, lng:107.4432, provinsi:'Jawa Barat' },
+    'subang': { lat:-6.5711, lng:107.7607, provinsi:'Jawa Barat' },
+    'indramayu': { lat:-6.3273, lng:108.3200, provinsi:'Jawa Barat' },
+    'majalengka': { lat:-6.8362, lng:108.2273, provinsi:'Jawa Barat' },
+    'kuningan': { lat:-6.9764, lng:108.4837, provinsi:'Jawa Barat' },
+    'ciamis': { lat:-7.3269, lng:108.3532, provinsi:'Jawa Barat' },
+    'banjar': { lat:-7.3667, lng:108.5333, provinsi:'Jawa Barat' },
+    'bandung barat': { lat:-6.8354, lng:107.4877, provinsi:'Jawa Barat' },
+    'cimahi': { lat:-6.8841, lng:107.5413, provinsi:'Jawa Barat' },
+    'pangandaran': { lat:-7.6832, lng:108.6503, provinsi:'Jawa Barat' },
+
+    // DI Yogyakarta
+    'bantul': { lat:-7.8827, lng:110.3287, provinsi:'DI Yogyakarta' },
+    'sleman': { lat:-7.7167, lng:110.3569, provinsi:'DI Yogyakarta' },
+    'kulon progo': { lat:-7.8256, lng:110.1642, provinsi:'DI Yogyakarta' },
+    'gunung kidul': { lat:-7.9825, lng:110.6173, provinsi:'DI Yogyakarta' },
+
+    // Jawa Tengah
+    'surakarta': { lat:-7.5755, lng:110.8243, provinsi:'Jawa Tengah' },
+    'solo': { lat:-7.5755, lng:110.8243, provinsi:'Jawa Tengah' },
+    'magelang': { lat:-7.4797, lng:110.2177, provinsi:'Jawa Tengah' },
+    'kudus': { lat:-6.8048, lng:110.8405, provinsi:'Jawa Tengah' },
+    'pati': { lat:-6.7559, lng:111.0388, provinsi:'Jawa Tengah' },
+    'tegal': { lat:-6.8694, lng:109.1402, provinsi:'Jawa Tengah' },
+    'pekalongan': { lat:-6.8898, lng:109.6753, provinsi:'Jawa Tengah' },
+    'banyumas': { lat:-7.4241, lng:109.2340, provinsi:'Jawa Tengah' },
+    'purwokerto': { lat:-7.4241, lng:109.2340, provinsi:'Jawa Tengah' },
+    'cilacap': { lat:-7.7266, lng:109.0100, provinsi:'Jawa Tengah' },
+    'klaten': { lat:-7.7056, lng:110.6069, provinsi:'Jawa Tengah' },
+    'boyolali': { lat:-7.5300, lng:110.5947, provinsi:'Jawa Tengah' },
+    'sragen': { lat:-7.4262, lng:111.0225, provinsi:'Jawa Tengah' },
+    'salatiga': { lat:-7.3305, lng:110.5084, provinsi:'Jawa Tengah' },
+
+    // Jawa Timur
+    'malang': { lat:-7.9666, lng:112.6326, provinsi:'Jawa Timur' },
+    'kediri': { lat:-7.8480, lng:112.0178, provinsi:'Jawa Timur' },
+    'blitar': { lat:-8.0954, lng:112.1609, provinsi:'Jawa Timur' },
+    'madiun': { lat:-7.6298, lng:111.5239, provinsi:'Jawa Timur' },
+    'jember': { lat:-8.1725, lng:113.7002, provinsi:'Jawa Timur' },
+    'banyuwangi': { lat:-8.2192, lng:114.3691, provinsi:'Jawa Timur' },
+    'sidoarjo': { lat:-7.4478, lng:112.7183, provinsi:'Jawa Timur' },
+    'gresik': { lat:-7.1553, lng:112.6533, provinsi:'Jawa Timur' },
+    'mojokerto': { lat:-7.4664, lng:112.4335, provinsi:'Jawa Timur' },
+    'probolinggo': { lat:-7.7543, lng:113.2159, provinsi:'Jawa Timur' },
+    'pasuruan': { lat:-7.6453, lng:112.9075, provinsi:'Jawa Timur' },
+    'lumajang': { lat:-8.1339, lng:113.2245, provinsi:'Jawa Timur' },
+    'bojonegoro': { lat:-7.1500, lng:111.8817, provinsi:'Jawa Timur' },
+    'tuban': { lat:-6.8973, lng:112.0654, provinsi:'Jawa Timur' },
+
+    // Banten
+    'tangerang': { lat:-6.1783, lng:106.6319, provinsi:'Banten' },
+    'tangerang selatan': { lat:-6.2888, lng:106.7183, provinsi:'Banten' },
+    'cilegon': { lat:-6.0025, lng:106.0111, provinsi:'Banten' },
+    'lebak': { lat:-6.5588, lng:106.2530, provinsi:'Banten' },
+    'pandeglang': { lat:-6.3006, lng:106.1005, provinsi:'Banten' },
+
+    // Bali & Nusa Tenggara
+    'badung': { lat:-8.5900, lng:115.1780, provinsi:'Bali' },
+    'gianyar': { lat:-8.5333, lng:115.3286, provinsi:'Bali' },
+    'buleleng': { lat:-8.1120, lng:115.0882, provinsi:'Bali' },
+    'tabanan': { lat:-8.5417, lng:115.1256, provinsi:'Bali' },
+    'karangasem': { lat:-8.4535, lng:115.6081, provinsi:'Bali' },
+
+    // Sumatera lainnya
+    'deli serdang': { lat:3.5297, lng:98.7861, provinsi:'Sumatera Utara' },
+    'binjai': { lat:3.6001, lng:98.4854, provinsi:'Sumatera Utara' },
+    'pematang siantar': { lat:2.9595, lng:99.0687, provinsi:'Sumatera Utara' },
+    'padang sidempuan': { lat:1.3781, lng:99.2717, provinsi:'Sumatera Utara' },
+    'batam': { lat:1.0456, lng:104.0305, provinsi:'Kepulauan Riau' },
+    'dumai': { lat:1.6667, lng:101.4500, provinsi:'Riau' },
+    'lubuklinggau': { lat:-3.2967, lng:102.8608, provinsi:'Sumatera Selatan' },
+    'metro': { lat:-5.1131, lng:105.3067, provinsi:'Lampung' },
+
+    // Kalimantan & Sulawesi lainnya
+    'balikpapan': { lat:-1.2379, lng:116.8529, provinsi:'Kalimantan Timur' },
+    'bontang': { lat:0.1324, lng:117.4855, provinsi:'Kalimantan Timur' },
+    'singkawang': { lat:0.9021, lng:108.9814, provinsi:'Kalimantan Barat' },
+    'bitung': { lat:1.4451, lng:125.1815, provinsi:'Sulawesi Utara' },
+    'parepare': { lat:-4.0135, lng:119.6255, provinsi:'Sulawesi Selatan' },
+    'bau bau': { lat:-5.4740, lng:122.6170, provinsi:'Sulawesi Tenggara' },
+
+    // Papua & Maluku
+    'sorong': { lat:-0.8762, lng:131.2558, provinsi:'Papua Barat' },
+    'ternate': { lat:0.7833, lng:127.3667, provinsi:'Maluku Utara' },
+    'merauke': { lat:-8.4667, lng:140.3333, provinsi:'Papua Selatan' }
+  };
+
+  // Bersihkan awalan "kabupaten"/"kota"/"kab." dari teks input sebelum dicocokkan
+  function normalisasiNamaWilayah(teks){
+    return teks
+      .toLowerCase()
+      .replace(/^kabupaten\s+/,'')
+      .replace(/^kab\.\s*/,'')
+      .replace(/^kab\s+/,'')
+      .replace(/^kota\s+/,'')
+      .replace(/^kotamadya\s+/,'')
+      .trim();
+  }
+
+  function isiOtomatisKoordinat(){
+    const inputEl = document.getElementById('fKabkota');
+    const hintEl = document.getElementById('fLatLngHint');
+    const teks = normalisasiNamaWilayah(inputEl.value || '');
+    if(!teks){
+      hintEl.classList.remove('auto-ok');
+      hintEl.textContent = 'Latitude/Longitude terisi otomatis begitu Kabupaten/Kota dikenali, dan tetap bisa diubah manual (pakai panah naik/turun atau ketik langsung). Jika tidak dikenali: buka Google Maps, klik kanan pada lokasi, salin koordinatnya ke sini.';
+      return;
+    }
+
+    // 1) coba cocok persis
+    let hasil = koordinatKabKota[teks];
+    // 2) kalau belum ketemu, coba cocok sebagian (mis. "tasikmalaya kota" atau salah ketik ringan)
+    if(!hasil){
+      const kunciCocok = Object.keys(koordinatKabKota).find(k => teks.includes(k) || k.includes(teks));
+      if(kunciCocok) hasil = koordinatKabKota[kunciCocok];
+    }
+
+    if(hasil){
+      document.getElementById('fLat').value = hasil.lat;
+      document.getElementById('fLng').value = hasil.lng;
+      const fProvinsi = document.getElementById('fProvinsi');
+      if(!fProvinsi.value.trim()) fProvinsi.value = hasil.provinsi;
+      hintEl.classList.add('auto-ok');
+      hintEl.textContent = 'Koordinat otomatis terisi untuk "' + inputEl.value.trim() + '". Masih bisa diubah manual jika kurang tepat.';
+    } else {
+      hintEl.classList.remove('auto-ok');
+      hintEl.textContent = 'Kabupaten/Kota belum dikenali di data referensi. Isi Latitude/Longitude manual: buka Google Maps, klik kanan pada lokasi, salin koordinatnya ke sini.';
+    }
+  }
 
   // ---------- Peta ----------
   let peta, markerLayer;
@@ -322,7 +526,7 @@
     dataFasilitas.forEach(f=>{
       if(!f.lat || !f.lng) return;
       const marker = L.marker([f.lat, f.lng]).addTo(markerLayer);
-      marker.bindPopup(`<b>${f.nama}</b><br>${tipeLabel[f.tipe] || f.tipe}<br>${f.wilayah || ''}`);
+      marker.bindPopup(`<b>${f.nama}</b><br>${tipeLabel[f.tipe] || f.tipe}<br>${f.wilayah || ''}${f.kabkota ? ' — ' + f.kabkota : ''}${f.provinsi ? ', ' + f.provinsi : ''}`);
     });
   }
 
@@ -349,7 +553,7 @@
   function renderTabel(){
     const tbody = document.getElementById('tabelFasilitas');
     if(dataFasilitas.length === 0){
-      tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">Belum ada data fasilitas. Klik "Tambah Fasilitas" untuk menambahkan.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Belum ada data fasilitas. Klik "Tambah Fasilitas" untuk menambahkan.</td></tr>';
       return;
     }
     tbody.innerHTML = '';
@@ -359,6 +563,8 @@
         <td class="nama-fas">${f.nama}</td>
         <td><span class="tipe-badge ${f.tipe}">${tipeLabel[f.tipe] || f.tipe}</span></td>
         <td>${f.wilayah || '-'}</td>
+        <td>${f.kabkota || '-'}</td>
+        <td>${f.provinsi || '-'}</td>
         <td>${f.kontak || '-'}</td>
         <td class="aksi">
           <button title="Lihat di peta" onclick="fokusPeta(${f.lat}, ${f.lng})">📍</button>
@@ -378,9 +584,14 @@
     document.getElementById('fNama').value = '';
     document.getElementById('fTipe').value = 'puskesmas';
     document.getElementById('fWilayah').value = '';
+    document.getElementById('fKabkota').value = '';
+    document.getElementById('fProvinsi').value = '';
     document.getElementById('fLat').value = '';
     document.getElementById('fLng').value = '';
     document.getElementById('fKontak').value = '';
+    const hintEl = document.getElementById('fLatLngHint');
+    hintEl.classList.remove('auto-ok');
+    hintEl.textContent = 'Latitude/Longitude terisi otomatis begitu Kabupaten/Kota dikenali, dan tetap bisa diubah manual (pakai panah naik/turun atau ketik langsung). Jika tidak dikenali: buka Google Maps, klik kanan pada lokasi, salin koordinatnya ke sini.';
     document.getElementById('tambahModal').classList.add('show');
   }
   function tutupModalTambah(){
@@ -391,6 +602,8 @@
     const nama = document.getElementById('fNama').value.trim();
     const tipe = document.getElementById('fTipe').value;
     const wilayah = document.getElementById('fWilayah').value.trim();
+    const kabkota = document.getElementById('fKabkota').value.trim();
+    const provinsi = document.getElementById('fProvinsi').value.trim();
     const lat = parseFloat(document.getElementById('fLat').value);
     const lng = parseFloat(document.getElementById('fLng').value);
     const kontak = document.getElementById('fKontak').value.trim();
@@ -401,14 +614,14 @@
     }
 
     if(db && !modeDemo){
-      const { error } = await db.from('fasilitas').insert([{ nama, tipe, wilayah, lat, lng, kontak }]);
+      const { error } = await db.from('fasilitas').insert([{ nama, tipe, wilayah, kabkota, provinsi, lat, lng, kontak }]);
       if(error){
         tampilkanToast('Gagal menyimpan ke Supabase: ' + error.message, true);
         return;
       }
       await loadFasilitas();
     } else {
-      dataFasilitas.push({ id:'demo-'+Date.now(), nama, tipe, wilayah, lat, lng, kontak });
+      dataFasilitas.push({ id:'demo-'+Date.now(), nama, tipe, wilayah, kabkota, provinsi, lat, lng, kontak });
       renderTabel();
       renderMarker();
     }
