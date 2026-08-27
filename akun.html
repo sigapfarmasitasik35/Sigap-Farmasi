@@ -141,6 +141,8 @@
   .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;}
   .field input,.field select{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;}
   .field input:focus,.field select:focus{border-color:var(--brand);}
+  .field-hint{font-size:11.5px;color:var(--text-faint);margin-top:8px;line-height:1.5;}
+  .field-hint strong{color:var(--text);}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
 
   .toast{position:fixed;bottom:24px;right:24px;background:var(--brand);color:#241a06;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:60;max-width:360px;}
@@ -255,11 +257,14 @@
       <h3>Tambah Pengguna</h3>
       <div class="field"><label>Nama</label><input type="text" id="fNama" placeholder="Nama lengkap"></div>
       <div class="field"><label>Email</label><input type="email" id="fEmail" placeholder="nama@email.com"></div>
-      <div class="field"><label>Peran</label>
+      <div class="field"><label>Password</label><input type="password" id="fPassword" placeholder="Minimal 6 karakter"></div>
+      <div class="field">
+        <label>Peran</label>
         <select id="fPeran">
           <option value="User">User</option>
           <option value="Super Admin">Super Admin</option>
         </select>
+        <p class="field-hint"><strong>Super Admin</strong> dapat mengelola semua data termasuk akun pengguna. <strong>User</strong> hanya dapat mengakses fitur operasional.</p>
       </div>
       <div class="modal-actions">
         <button class="btn-secondary" onclick="tutupModal()">Batal</button>
@@ -400,6 +405,7 @@
   function tambahPengguna(){
     document.getElementById('fNama').value = '';
     document.getElementById('fEmail').value = '';
+    document.getElementById('fPassword').value = '';
     document.getElementById('fPeran').value = 'User';
     document.getElementById('tambahModal').classList.add('show');
   }
@@ -412,14 +418,19 @@
     if(!db){ tampilkanToast('Koneksi Supabase belum siap.', true); return; }
     const nama = document.getElementById('fNama').value.trim();
     const email = document.getElementById('fEmail').value.trim();
+    const password = document.getElementById('fPassword').value;
     const peran = document.getElementById('fPeran').value;
 
-    if(!nama || !email){
-      tampilkanToast('Nama dan email wajib diisi.', true);
+    if(!nama || !email || !password){
+      tampilkanToast('Nama, email, dan password wajib diisi.', true);
+      return;
+    }
+    if(password.length < 6){
+      tampilkanToast('Password minimal 6 karakter.', true);
       return;
     }
 
-    const { error } = await db.from('pengguna').insert([{ nama, email, peran }]);
+    const { error } = await db.from('pengguna').insert([{ nama, email, password, peran }]);
 
     if(error){
       console.error(error);
