@@ -122,12 +122,20 @@
   .field-hint{font-size:11.5px;color:var(--muted-dim);margin-top:5px;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
 
+  /* ---------- Daftar obat multi-baris (di modal Kirim Obat) ---------- */
+  .obat-row{display:grid;grid-template-columns:1fr 100px 34px;gap:8px;margin-bottom:8px;align-items:center;}
+  .obat-row select, .obat-row input{margin:0;}
+  .obat-hapus{width:34px;height:38px;flex-shrink:0;border-radius:8px;border:1px solid var(--border);background:var(--panel-2);color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .obat-hapus:hover{color:#f0938a;border-color:#f0938a;}
+  .obat-hapus:disabled{opacity:.35;cursor:not-allowed;}
+
   .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#06110c;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:10000;max-width:360px;}
   .toast.error{background:var(--red);color:#fff;}
 
   @media (max-width:900px){
     main{padding:18px;}
     .field-row{grid-template-columns:1fr;}
+    .obat-row{grid-template-columns:1fr 80px 34px;}
   }
 </style>
 </head>
@@ -252,19 +260,19 @@
       </div>
 
       <div class="field">
-  <label>Daftar Obat</label>
-  <div id="daftarObatKirim"></div>
-  <button type="button" class="btn-secondary" style="margin-top:8px;" onclick="tambahBarisObat()">+ Tambah Obat</button>
-</div>
+        <label>Daftar Obat</label>
+        <div id="daftarObatKirim"></div>
+        <button type="button" class="btn-secondary" style="margin-top:8px;" onclick="tambahBarisObat()">+ Tambah Obat</button>
+      </div>
 
-<div class="field-row">
-  <div class="field"><label>Asal</label><input type="text" id="dAsal" placeholder="Contoh: Gudang Pusat Dinkes"></div>
-  <div class="field"><label>Tujuan</label><select id="dTujuan"><option value="">Memuat data fasilitas...</option></select></div>
-</div>
+      <div class="field-row">
+        <div class="field"><label>Asal</label><input type="text" id="dAsal" placeholder="Contoh: Gudang Pusat Dinkes"></div>
+        <div class="field"><label>Tujuan</label><select id="dTujuan"><option value="">Memuat data fasilitas...</option></select></div>
+      </div>
 
-<div class="field">
-  <label>Kurir</label><input type="text" id="dKurir" placeholder="Contoh: Budi / JNE Logistik">
-</div>
+      <div class="field">
+        <label>Kurir</label><input type="text" id="dKurir" placeholder="Contoh: Budi / JNE Logistik">
+      </div>
 
       <div class="field-row">
         <div class="field"><label>Tanggal Kirim</label><input type="date" id="dTanggal"></div>
@@ -310,6 +318,8 @@
 
   let dataDistribusi = [];
   let modeDemo = true;
+  let opsiObatHTML = '<option value="">Pilih Obat</option>';
+  let idBarisObat = 0;
 
   const statusLabel = { Menunggu:'Menunggu', Dikirim:'Dikirim', Diterima:'Diterima', Dibatalkan:'Dibatalkan' };
   const urutanStatus = ['Menunggu','Dikirim','Diterima'];
@@ -361,17 +371,15 @@
     });
   }
 
-  async function muatDropdownObat(){
-    const sel = document.getElementById('dObat');
-    sel.innerHTML = '<option value="">Pilih Obat</option>';
+  // ---------- Siapkan opsi dropdown Obat dari tabel "obat" (dipakai berulang di tiap baris) ----------
+  async function muatOpsiObat(){
+    opsiObatHTML = '<option value="">Pilih Obat</option>';
     if(!db) return;
     try{
       const { data, error } = await db.from('obat').select('nama').order('nama', { ascending:true });
       if(error || !data || data.length === 0) return;
       data.forEach(o=>{
-        const opt = document.createElement('option');
-        opt.value = o.nama; opt.textContent = o.nama;
-        sel.appendChild(opt);
+        opsiObatHTML += `<option value="${o.nama}">${o.nama}</option>`;
       });
     }catch(e){ console.warn('Gagal memuat daftar obat:', e); }
   }
@@ -391,6 +399,42 @@
     }catch(e){ console.warn('Gagal memuat daftar fasilitas:', e); }
   }
 
+  // ---------- Baris obat (bisa lebih dari satu, dalam 1 pengiriman/resi) ----------
+  function tambahBarisObat(){
+    idBarisObat++;
+    const rowId = 'baris-' + idBarisObat;
+    const wrap = document.getElementById('daftarObatKirim');
+    const div = document.createElement('div');
+    div.className = 'obat-row';
+    div.id = rowId;
+    div.innerHTML = `
+      <select class="obat-select">${opsiObatHTML}</select>
+      <input type="number" class="obat-jumlah" min="0" placeholder="Jumlah" value="0">
+      <button type="button" class="obat-hapus" onclick="hapusBarisObat('${rowId}')">✕</button>
+    `;
+    wrap.appendChild(div);
+    perbaruiTombolHapusObat();
+  }
+
+  function hapusBarisObat(rowId){
+    const wrap = document.getElementById('daftarObatKirim');
+    if(wrap.children.length <= 1) return; // minimal harus ada 1 baris
+    document.getElementById(rowId)?.remove();
+    perbaruiTombolHapusObat();
+  }
+
+  function perbaruiTombolHapusObat(){
+    const wrap = document.getElementById('daftarObatKirim');
+    const tombolHapus = wrap.querySelectorAll('.obat-hapus');
+    tombolHapus.forEach(btn => { btn.disabled = wrap.children.length <= 1; });
+  }
+
+  function resetDaftarObat(){
+    document.getElementById('daftarObatKirim').innerHTML = '';
+    idBarisObat = 0;
+    tambahBarisObat();
+  }
+
   function buatNomorResiOtomatis(){
     const tgl = new Date();
     const kode = tgl.getFullYear().toString() + String(tgl.getMonth()+1).padStart(2,'0') + String(tgl.getDate()).padStart(2,'0');
@@ -401,13 +445,13 @@
   async function bukaModalKirim(){
     document.getElementById('dResi').value = buatNomorResiOtomatis();
     document.getElementById('dAsal').value = '';
-    document.getElementById('dJumlah').value = '';
     document.getElementById('dKurir').value = '';
     document.getElementById('dTanggal').value = new Date().toISOString().slice(0,10);
     document.getElementById('dStatus').value = 'Menunggu';
 
     document.getElementById('kirimModal').classList.add('show');
-    await Promise.all([ muatDropdownObat(), muatDropdownTujuan() ]);
+    await Promise.all([ muatOpsiObat(), muatDropdownTujuan() ]);
+    resetDaftarObat();
   }
   function tutupModalKirim(){
     document.getElementById('kirimModal').classList.remove('show');
@@ -415,35 +459,60 @@
 
   async function simpanDistribusi(){
     const nomor_resi = document.getElementById('dResi').value.trim();
-    const obat = document.getElementById('dObat').value;
     const asal = document.getElementById('dAsal').value.trim();
     const tujuan = document.getElementById('dTujuan').value;
-    const jumlah = parseInt(document.getElementById('dJumlah').value) || 0;
     const kurir = document.getElementById('dKurir').value.trim();
     const tanggal_kirim = document.getElementById('dTanggal').value || null;
     const status = document.getElementById('dStatus').value;
 
-    if(!nomor_resi || !obat || !asal || !tujuan || jumlah <= 0){
-      tampilkanToast('Nomor Resi, Obat, Asal, Tujuan, dan Jumlah wajib diisi dengan benar.', true);
+    if(!nomor_resi || !asal || !tujuan){
+      tampilkanToast('Nomor Resi, Asal, dan Tujuan wajib diisi.', true);
       return;
     }
 
-    const payload = { nomor_resi, obat, asal, tujuan, jumlah, kurir, tanggal_kirim, status };
+    // Kumpulkan semua baris obat yang terisi lengkap (obat dipilih + jumlah > 0)
+    const barisObat = Array.from(document.querySelectorAll('#daftarObatKirim .obat-row'));
+    const daftarItemObat = [];
+    let adaBarisTidakLengkap = false;
+
+    barisObat.forEach(row=>{
+      const obat = row.querySelector('.obat-select').value;
+      const jumlah = parseInt(row.querySelector('.obat-jumlah').value) || 0;
+      if(obat && jumlah > 0){
+        daftarItemObat.push({ obat, jumlah });
+      } else if(obat || jumlah > 0){
+        adaBarisTidakLengkap = true;
+      }
+    });
+
+    if(daftarItemObat.length === 0){
+      tampilkanToast('Isi minimal 1 obat beserta jumlahnya.', true);
+      return;
+    }
+    if(adaBarisTidakLengkap){
+      tampilkanToast('Ada baris obat yang belum lengkap (obat atau jumlah kosong). Baris itu diabaikan.', true);
+    }
+
+    // Setiap obat disimpan sebagai satu baris pengiriman, dengan nomor resi yang sama
+    const daftarPayload = daftarItemObat.map(item => ({
+      nomor_resi, asal, tujuan, kurir, tanggal_kirim, status,
+      obat: item.obat, jumlah: item.jumlah
+    }));
 
     if(db && !modeDemo){
-      const { error } = await db.from('distribusi_obat').insert([payload]);
+      const { error } = await db.from('distribusi_obat').insert(daftarPayload);
       if(error){
         tampilkanToast('Gagal menyimpan ke Supabase: ' + error.message, true);
         return;
       }
       await loadDistribusi();
     } else {
-      dataDistribusi.unshift({ id:'demo-'+Date.now(), ...payload });
+      daftarPayload.forEach(p => dataDistribusi.unshift({ id:'demo-'+Date.now()+'-'+Math.random().toString(36).slice(2,6), ...p }));
       renderTabel();
     }
 
     tutupModalKirim();
-    tampilkanToast('Pengiriman "' + nomor_resi + '" berhasil dibuat' + (modeDemo ? ' (mode demo, belum tersimpan permanen).' : '.'));
+    tampilkanToast('Pengiriman "' + nomor_resi + '" berhasil dibuat dengan ' + daftarPayload.length + ' jenis obat' + (modeDemo ? ' (mode demo, belum tersimpan permanen).' : '.'));
   }
 
   async function majukanStatus(id){
