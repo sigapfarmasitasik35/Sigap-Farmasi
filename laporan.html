@@ -253,29 +253,26 @@
   }
 
   // ==========================================================
-  // KONFIGURASI TABEL — SESUAIKAN DENGAN SKEMA ASLI KAMU
-  // Nama tabel & kolom di bawah ini adalah TEBAKAN berdasarkan
-  // nama menu (kebutuhan.html, distribusi.html, data-obat.html)
-  // dan tampilan di screenshot. Kalau nama tabel/kolom asli kamu
-  // beda, cukup ubah bagian ini saja — sisa kode tidak perlu diubah.
+  // KONFIGURASI TABEL — sudah disesuaikan dengan skema asli
+  // (dicocokkan dari kode kebutuhan.html, distribusi.html, data-obat.html)
   // ==========================================================
   const KONFIG = {
     kebutuhan: {
       judul: 'Kebutuhan Obat',
-      table: 'kebutuhan_obat',       // <-- sesuaikan nama tabel
-      kolomTanggal: 'tanggal',       // <-- kolom tanggal untuk filter
+      table: 'kebutuhan_obat',
+      kolomTanggal: 'tanggal_kebutuhan',
       kolom: [
-        { key: 'tanggal',     label: 'Tanggal',     tipe: 'tanggal' },
-        { key: 'bencana',     label: 'Bencana',      tipe: 'teks' },
-        { key: 'obat',        label: 'Obat',         tipe: 'teks' },
-        { key: 'dibutuhkan',  label: 'Dibutuhkan',   tipe: 'angka' },
-        { key: 'terpenuhi',   label: 'Terpenuhi',    tipe: 'angka' },
-        { key: 'status',      label: 'Status',       tipe: 'status' }
+        { key: 'tanggal_kebutuhan', label: 'Tanggal',    tipe: 'tanggal' },
+        { key: 'bencana',           label: 'Bencana',     tipe: 'teks' },
+        { key: 'obat',              label: 'Obat',        tipe: 'teks' },
+        { key: 'jumlah_dibutuhkan', label: 'Dibutuhkan',  tipe: 'angka' },
+        { key: 'jumlah_terpenuhi',  label: 'Terpenuhi',   tipe: 'angka' },
+        { key: 'status',            label: 'Status',      tipe: 'status' }
       ]
     },
     distribusi: {
       judul: 'Distribusi Obat',
-      table: 'distribusi_obat',      // <-- sesuaikan nama tabel
+      table: 'distribusi_obat',      // <-- sesuaikan nama tabel bila error
       kolomTanggal: 'tanggal',
       kolom: [
         { key: 'tanggal',     label: 'Tanggal',     tipe: 'tanggal' },
@@ -287,8 +284,8 @@
     },
     stok: {
       judul: 'Stok & Inventori',
-      table: 'data_obat',            // <-- sesuaikan nama tabel
-      kolomTanggal: null,            // stok tidak difilter tanggal
+      table: 'data_obat',
+      kolomTanggal: null,
       kolom: [
         { key: 'nama_obat',   label: 'Nama Obat',   tipe: 'teks' },
         { key: 'kategori',    label: 'Kategori',     tipe: 'teks' },
@@ -345,7 +342,7 @@
     const v = (val || '').toString().toLowerCase();
     let cls = 'muted';
     if(/terpenuhi|selesai|aman|berhasil|sukses/.test(v)) cls = 'ok';
-    else if(/sebagian|menipis|proses|pending/.test(v)) cls = 'warn';
+    else if(/sebagian|menipis|proses|pending|menunggu|diproses/.test(v)) cls = 'warn';
     else if(/belum|habis|gagal|kosong/.test(v)) cls = 'bad';
     return `<span class="status-pill ${cls}">${val || '-'}</span>`;
   }
