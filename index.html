@@ -6,6 +6,9 @@
 <title>SIGAP-FARMASI — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bg:#0b0f10;
@@ -19,6 +22,9 @@
     --red:#e5484d;
     --red-soft:#3a1e1a;
     --orange:#f5a524;
+    --orange-soft:#3a2c14;
+    --blue:#4fa3e8;
+    --blue-soft:#123049;
     --text:#f2f4f3;
     --text-dim:#93a1a0;
     --text-faint:#5c6b6a;
@@ -84,6 +90,8 @@
 
   .section-row{display:flex;align-items:baseline;justify-content:space-between;margin:22px 0 12px;flex-wrap:wrap;gap:8px;flex-shrink:0;}
   .section-row h2{font-size:14px;font-weight:600;}
+  .section-row a.lihat-semua{font-size:12px;color:var(--brand);font-weight:600;}
+  .section-row a.lihat-semua:hover{text-decoration:underline;}
 
   .stats-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;flex-shrink:0;}
   @media (max-width:1100px){ .stats-grid{grid-template-columns:repeat(2, 1fr);} }
@@ -91,7 +99,7 @@
 
   .stat-card{
     background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;
-    transition:transform .15s ease, border-color .15s ease;
+    transition:transform .15s ease, border-color .15s ease; cursor:pointer;
   }
   .stat-card:hover{transform:translateY(-2px);border-color:var(--text-faint);}
   .stat-card.accent-amber{background:linear-gradient(160deg, var(--brand-soft), var(--panel) 65%);border-color:rgba(232,163,61,.3);}
@@ -115,34 +123,64 @@
   .stat-foot .note{color:var(--text-dim);}
 
   .bar-track{margin-top:13px;height:4px;border-radius:3px;background:var(--border);overflow:hidden;}
-  .bar-fill{height:100%;border-radius:3px;}
+  .bar-fill{height:100%;border-radius:3px;transition:width .4s ease;}
   .bar-fill.amber{background:var(--brand);}
   .bar-fill.green{background:var(--green);}
+  .bar-fill.red{background:var(--red);}
 
-  .panels-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:6px;padding-bottom:14px;}
+  .panels-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:6px;}
   @media (max-width:920px){ .panels-grid{grid-template-columns:1fr;} }
 
   .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;}
-  .panel h3{font-size:14px;font-weight:600;margin-bottom:14px;}
+  .panel h3{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+  .panel h3 a{font-size:11.5px;font-weight:600;color:var(--brand);}
+  .panel h3 a:hover{text-decoration:underline;}
 
   .map-box{
-    position:relative;height:300px;border-radius:9px;overflow:hidden;
-    background:
-      repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 32px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 32px),
-      linear-gradient(160deg,#3a4a4a,#1c2426);
+    position:relative;height:300px;border-radius:9px;overflow:hidden;background:#1a2c34;
   }
-  .map-controls{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;box-shadow:0 2px 6px rgba(0,0,0,.35);border-radius:6px;overflow:hidden;}
-  .map-controls button{width:32px;height:32px;background:var(--panel-2);border:none;border-bottom:1px solid var(--border);font-size:15px;color:var(--text);cursor:pointer;}
-  .map-controls button:last-child{border-bottom:none;}
-  .map-pin{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(232,163,61,.3);position:absolute;}
+  .leaflet-popup-content-wrapper{background:var(--panel-2);color:var(--text);border-radius:8px;}
+  .leaflet-popup-tip{background:var(--panel-2);}
+  .leaflet-popup-content b{color:var(--brand);}
+  .leaflet-container a.leaflet-popup-close-button{color:var(--text-dim);}
 
   .chart-box{height:300px;display:flex;align-items:flex-end;gap:14px;padding:0 4px;position:relative;}
   .chart-y{position:absolute;left:0;top:0;bottom:26px;display:flex;flex-direction:column;justify-content:space-between;font-family:'IBM Plex Mono', monospace;font-size:10px;color:var(--text-faint);}
   .chart-bars{display:flex;align-items:flex-end;gap:16px;margin-left:40px;flex:1;height:100%;padding-bottom:26px;border-left:1px solid var(--border);}
-  .bar-col{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
-  .bar-col .bar{width:100%;max-width:42px;border-radius:5px 5px 0 0;background:var(--brand);}
-  .bar-col .lbl{font-size:10px;color:var(--text-faint);font-family:'IBM Plex Mono', monospace;}
+  .bar-col{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;min-width:0;}
+  .bar-col .bar{width:100%;max-width:42px;border-radius:5px 5px 0 0;background:var(--brand);transition:height .4s ease;}
+  .bar-col .lbl{font-size:10px;color:var(--text-faint);font-family:'IBM Plex Mono', monospace;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+
+  .empty-msg{color:var(--text-faint);font-size:12.5px;text-align:center;padding:30px 10px;}
+
+  /* ---------- Tren kebutuhan (SVG line chart) ---------- */
+  .tren-box{width:100%;}
+  .tren-box svg{width:100%;height:auto;display:block;}
+  .tren-labels{display:flex;justify-content:space-between;margin-top:6px;padding-left:2px;padding-right:2px;}
+  .tren-labels span{font-size:10.5px;color:var(--text-faint);font-family:'IBM Plex Mono', monospace;}
+
+  /* ---------- Daftar terbaru ---------- */
+  .list-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:920px){ .list-grid{grid-template-columns:1fr;} }
+
+  .latest-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);}
+  .latest-row:last-child{border-bottom:none;padding-bottom:0;}
+  .latest-row:first-child{padding-top:0;}
+  .latest-main{font-size:13px;font-weight:600;color:var(--text);}
+  .latest-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+  .latest-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .b-prioritas-tinggi{background:var(--red-soft);color:var(--red);}
+  .b-prioritas-sedang{background:var(--orange-soft);color:var(--orange);}
+  .b-prioritas-rendah{background:var(--green-soft);color:var(--green);}
+  .b-kstatus-menunggu{background:var(--orange-soft);color:var(--orange);}
+  .b-kstatus-diproses{background:var(--blue-soft);color:var(--blue);}
+  .b-kstatus-terpenuhi{background:var(--green-soft);color:var(--green);}
+  .b-dstatus-menunggu{background:var(--brand-soft);color:var(--brand);}
+  .b-dstatus-dikirim{background:var(--blue-soft);color:var(--blue);}
+  .b-dstatus-diterima{background:var(--green-soft);color:var(--green);}
+  .b-dstatus-dibatalkan{background:var(--red-soft);color:var(--red);}
 
   @media (max-width:900px){
     .sidebar{display:none;}
@@ -220,42 +258,41 @@
     </div>
 
     <div class="stats-grid">
-      <div class="stat-card accent-amber">
+      <div class="stat-card accent-amber" onclick="location.href='data-obat.html'">
         <div class="stat-top">
           <span class="stat-label">Total Obat</span>
           <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3l8 8-6 6-8-8 6-6z"/><circle cx="17" cy="17" r="4"/></svg></div>
         </div>
-        <div class="stat-value">21</div>
-        <div class="stat-foot"><span class="pill green">+12%</span></div>
-        <div class="bar-track"><div class="bar-fill amber" style="width:78%"></div></div>
+        <div class="stat-value" id="statTotalObat">–</div>
+        <div class="stat-foot"><span class="pill green" id="statTotalObatBadge">-</span><span class="note">jenis obat terdaftar</span></div>
+        <div class="bar-track"><div class="bar-fill amber" id="statTotalObatBar" style="width:0%"></div></div>
       </div>
 
-      <div class="stat-card accent-red">
+      <div class="stat-card accent-red" onclick="location.href='monitoring.html'">
         <div class="stat-top">
           <span class="stat-label">Stok Kritis</span>
           <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.8 17a2 2 0 001.7 3h15a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></div>
         </div>
-        <div class="stat-value">4</div>
-        <div class="stat-foot"><span class="pill red">5%</span><span class="note">Perlu audit segera</span></div>
+        <div class="stat-value" id="statKritis">–</div>
+        <div class="stat-foot"><span class="pill red" id="statKritisBadge">-</span><span class="note" id="statKritisNote">Memuat data...</span></div>
       </div>
 
-      <div class="stat-card accent-amber">
+      <div class="stat-card accent-amber" onclick="location.href='kebutuhan.html'">
         <div class="stat-top">
           <span class="stat-label">Kebutuhan Aktif</span>
           <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7l9-5z"/></svg></div>
         </div>
-        <div class="stat-value">6</div>
-        <div class="stat-foot"><span class="pill amber">Darurat</span></div>
-        <div class="bar-track"><div class="bar-fill amber" style="width:55%"></div></div>
+        <div class="stat-value" id="statKebutuhan">–</div>
+        <div class="stat-foot"><span class="pill amber" id="statKebutuhanBadge">-</span><span class="note" id="statKebutuhanNote">Memuat data...</span></div>
       </div>
 
-      <div class="stat-card accent-green">
+      <div class="stat-card accent-green" onclick="location.href='distribusi.html'">
         <div class="stat-top">
           <span class="stat-label">Distribusi Bulan Ini</span>
           <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1.5"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.7"/><circle cx="18" cy="19" r="1.7"/></svg></div>
         </div>
-        <div class="stat-value">1</div>
-        <div class="stat-foot"><span class="pill green">+24%</span><span class="note">Naik dari bulan lalu</span></div>
+        <div class="stat-value" id="statDistribusi">–</div>
+        <div class="stat-foot"><span class="pill green" id="statDistribusiBadge">-</span><span class="note" id="statDistribusiNote">Memuat data...</span></div>
       </div>
     </div>
 
@@ -265,34 +302,318 @@
 
     <div class="panels-grid">
       <div class="panel">
-        <h3>Peta Ketersediaan Faskes</h3>
-        <div class="map-box">
-          <div class="map-controls">
-            <button aria-label="Perbesar">+</button>
-            <button aria-label="Perkecil">−</button>
-          </div>
-          <div class="map-pin" style="top:40%; left:35%;"></div>
-          <div class="map-pin" style="top:60%; left:55%;"></div>
-          <div class="map-pin" style="top:30%; left:65%;"></div>
-        </div>
+        <h3>Peta Ketersediaan Faskes <a href="fasilitas.html">Lihat semua &rarr;</a></h3>
+        <div class="map-box" id="petaDashboard"></div>
       </div>
 
       <div class="panel">
         <h3>Distribusi Per Wilayah</h3>
-        <div class="chart-box">
-          <div class="chart-y"><span>2200</span><span>1650</span><span>1100</span><span>550</span></div>
-          <div class="chart-bars">
-            <div class="bar-col"><div class="bar" style="height:88%"></div><span class="lbl">Wil. A</span></div>
-            <div class="bar-col"><div class="bar" style="height:34%"></div><span class="lbl">Wil. B</span></div>
-            <div class="bar-col"><div class="bar" style="height:20%"></div><span class="lbl">Wil. C</span></div>
-          </div>
+        <div class="chart-box" id="chartWilayahWrap">
+          <div class="chart-y" id="chartWilayahY"></div>
+          <div class="chart-bars" id="chartWilayahBars"></div>
         </div>
+      </div>
+    </div>
+
+    <div class="section-row">
+      <h2>Tren &amp; Aktivitas Terbaru</h2>
+    </div>
+
+    <div class="panel" style="margin-bottom:14px;">
+      <h3>Tren Kebutuhan Obat (6 Bulan Terakhir)</h3>
+      <div class="tren-box" id="trenKebutuhanWrap">
+        <div class="empty-msg">Memuat data...</div>
+      </div>
+    </div>
+
+    <div class="list-grid" style="padding-bottom:14px;">
+      <div class="panel">
+        <h3>Kebutuhan Terbaru <a href="kebutuhan.html">Lihat semua &rarr;</a></h3>
+        <div id="listKebutuhanTerbaru"><div class="empty-msg">Memuat data...</div></div>
+      </div>
+      <div class="panel">
+        <h3>Distribusi Terbaru <a href="distribusi.html">Lihat semua &rarr;</a></h3>
+        <div id="listDistribusiTerbaru"><div class="empty-msg">Memuat data...</div></div>
       </div>
     </div>
 
   </main>
 
 <script>
+  // =========================================================
+  // KONEKSI SUPABASE — sama seperti halaman lain, supaya Dashboard
+  // membaca tabel yang sama: "obat", "fasilitas", "kebutuhan_obat",
+  // dan "distribusi_obat". Variabel klien diberi nama "db" supaya
+  // tidak bentrok dengan variabel global "supabase" dari CDN.
+  // =========================================================
+  const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
+
+  let db;
+  try {
+    if (window.supabase) db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    console.error('Gagal membuat koneksi Supabase:', e);
+  }
+
+  let dataObat = [], dataFasilitas = [], dataKebutuhan = [], dataDistribusi = [];
+
+  const tipeLabelFaskes = { puskesmas:'Puskesmas', rumahsakit:'Rumah Sakit', posko:'Posko Darurat' };
+  const prioritasLabel = { tinggi:'Tinggi', sedang:'Sedang', rendah:'Rendah' };
+  const kStatusLabel = { menunggu:'Menunggu', diproses:'Diproses', terpenuhi:'Terpenuhi' };
+  const dStatusLabel = { Menunggu:'Menunggu', Dikirim:'Dikirim', Diterima:'Diterima', Dibatalkan:'Dibatalkan' };
+
+  function fmt(n){ return Number(n || 0).toLocaleString('id-ID'); }
+
+  function statusObat(item){
+    const stok = Number(item.stok) || 0;
+    const min = Number(item.min) || 0;
+    if(stok <= min) return 'kritis';
+    if(stok <= min * 1.5) return 'menipis';
+    return 'aman';
+  }
+
+  // ---------- Ambil satu tabel dari Supabase (aman kalau tabel belum ada) ----------
+  async function ambilTabel(nama, kolomUrut, naik){
+    if(!db) return [];
+    try{
+      const { data, error } = await db.from(nama).select('*').order(kolomUrut, { ascending: naik });
+      if(error){ console.warn('Gagal memuat tabel "' + nama + '":', error.message); return []; }
+      return data || [];
+    }catch(e){
+      console.warn('Gagal memuat tabel "' + nama + '":', e);
+      return [];
+    }
+  }
+
+  async function muatSemuaData(){
+    [dataObat, dataFasilitas, dataKebutuhan, dataDistribusi] = await Promise.all([
+      ambilTabel('obat', 'nama', true),
+      ambilTabel('fasilitas', 'nama', true),
+      ambilTabel('kebutuhan_obat', 'created_at', false),
+      ambilTabel('distribusi_obat', 'created_at', false)
+    ]);
+
+    renderStatistikUtama();
+    renderPeta();
+    renderChartWilayah();
+    renderTrenKebutuhan();
+    renderKebutuhanTerbaru();
+    renderDistribusiTerbaru();
+  }
+
+  // ---------- Statistik Utama ----------
+  function dalamBulan(tglStr, offsetBulan){
+    if(!tglStr) return false;
+    const d = new Date(tglStr);
+    if(isNaN(d)) return false;
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth() + offsetBulan, 1);
+    return d.getFullYear() === target.getFullYear() && d.getMonth() === target.getMonth();
+  }
+
+  function renderStatistikUtama(){
+    // --- Total Obat (dari Data Obat) ---
+    const totalObat = dataObat.length;
+    const jmlKritis = dataObat.filter(o => statusObat(o) === 'kritis').length;
+    const jmlAman = totalObat - jmlKritis;
+    document.getElementById('statTotalObat').textContent = fmt(totalObat);
+    document.getElementById('statTotalObatBadge').textContent = totalObat > 0 ? Math.round((jmlAman/totalObat)*100) + '% aman' : '-';
+    document.getElementById('statTotalObatBar').style.width = totalObat > 0 ? Math.round((jmlAman/totalObat)*100) + '%' : '0%';
+
+    // --- Stok Kritis (dari Data Obat, stok <= minimum) ---
+    document.getElementById('statKritis').textContent = fmt(jmlKritis);
+    const persenKritis = totalObat > 0 ? Math.round((jmlKritis/totalObat)*100) : 0;
+    document.getElementById('statKritisBadge').textContent = persenKritis + '%';
+    document.getElementById('statKritisNote').textContent = jmlKritis > 0 ? 'Perlu audit segera' : 'Stok terkendali';
+
+    // --- Kebutuhan Aktif (dari Kebutuhan Obat, belum terpenuhi) ---
+    const kebutuhanAktif = dataKebutuhan.filter(k => k.status !== 'terpenuhi');
+    const kebutuhanDarurat = kebutuhanAktif.filter(k => k.prioritas === 'tinggi').length;
+    document.getElementById('statKebutuhan').textContent = fmt(kebutuhanAktif.length);
+    document.getElementById('statKebutuhanBadge').textContent = kebutuhanDarurat > 0 ? kebutuhanDarurat + ' Darurat' : 'Aman';
+    document.getElementById('statKebutuhanNote').textContent = kebutuhanAktif.length > 0 ? 'Menunggu / diproses' : 'Tidak ada pengajuan aktif';
+
+    // --- Distribusi Bulan Ini (dari Distribusi Obat) ---
+    const distBulanIni = dataDistribusi.filter(d => dalamBulan(d.tanggal_kirim, 0)).length;
+    const distBulanLalu = dataDistribusi.filter(d => dalamBulan(d.tanggal_kirim, -1)).length;
+    document.getElementById('statDistribusi').textContent = fmt(distBulanIni);
+    let badgeTxt = '-', noteTxt = 'Belum ada data bulan lalu';
+    if(distBulanLalu > 0){
+      const persen = Math.round(((distBulanIni - distBulanLalu) / distBulanLalu) * 100);
+      badgeTxt = (persen >= 0 ? '+' : '') + persen + '%';
+      noteTxt = persen >= 0 ? 'Naik dari bulan lalu' : 'Turun dari bulan lalu';
+    } else if(distBulanIni > 0){
+      badgeTxt = 'Baru'; noteTxt = 'Belum ada pembanding bulan lalu';
+    }
+    document.getElementById('statDistribusiBadge').textContent = badgeTxt;
+    document.getElementById('statDistribusiNote').textContent = noteTxt;
+  }
+
+  // ---------- Peta Ketersediaan Faskes ----------
+  let petaDb;
+  function renderPeta(){
+    const el = document.getElementById('petaDashboard');
+    if(!petaDb){
+      petaDb = L.map(el, { scrollWheelZoom:true }).setView([-2.5, 118], 4.3);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        maxZoom: 19
+      }).addTo(petaDb);
+      petaDb.markerLayer = L.layerGroup().addTo(petaDb);
+    }
+    petaDb.markerLayer.clearLayers();
+    if(dataFasilitas.length === 0){
+      el.style.display = 'flex';
+      return;
+    }
+    const titikValid = [];
+    dataFasilitas.forEach(f => {
+      if(!f.lat || !f.lng) return;
+      titikValid.push([f.lat, f.lng]);
+      const marker = L.marker([f.lat, f.lng]).addTo(petaDb.markerLayer);
+      marker.bindPopup(`<b>${f.nama}</b><br>${tipeLabelFaskes[f.tipe] || f.tipe}<br>${f.wilayah || ''}${f.kabkota ? ' — ' + f.kabkota : ''}`);
+    });
+    if(titikValid.length > 0){
+      petaDb.fitBounds(titikValid, { padding:[24,24], maxZoom:6 });
+    }
+    setTimeout(() => petaDb.invalidateSize(), 200);
+  }
+
+  // ---------- Distribusi Per Wilayah ----------
+  function wilayahDariFaskes(namaTujuan){
+    const f = dataFasilitas.find(f => f.nama === namaTujuan);
+    if(f) return f.wilayah || f.kabkota || namaTujuan;
+    return namaTujuan || 'Tidak diketahui';
+  }
+
+  function renderChartWilayah(){
+    const barsEl = document.getElementById('chartWilayahBars');
+    const yEl = document.getElementById('chartWilayahY');
+
+    if(dataDistribusi.length === 0){
+      barsEl.innerHTML = '';
+      yEl.innerHTML = '';
+      document.getElementById('chartWilayahWrap').innerHTML = '<div class="empty-msg">Belum ada data distribusi obat.</div>';
+      return;
+    }
+
+    const agregat = {};
+    dataDistribusi.forEach(d => {
+      const w = wilayahDariFaskes(d.tujuan);
+      agregat[w] = (agregat[w] || 0) + (Number(d.jumlah) || 0);
+    });
+
+    const entri = Object.entries(agregat).sort((a,b) => b[1]-a[1]).slice(0,5);
+    const nilaiMax = Math.max(...entri.map(e => e[1]), 1);
+
+    yEl.innerHTML = '';
+    for(let i=4;i>=0;i--){
+      const span = document.createElement('span');
+      span.textContent = fmt(Math.round(nilaiMax * (i/4)));
+      yEl.appendChild(span);
+    }
+
+    barsEl.innerHTML = '';
+    entri.forEach(([wilayah, nilai]) => {
+      const pct = Math.max(4, Math.round((nilai / nilaiMax) * 100));
+      const col = document.createElement('div');
+      col.className = 'bar-col';
+      col.innerHTML = `<div class="bar" style="height:${pct}%" title="${wilayah}: ${fmt(nilai)}"></div><span class="lbl">${wilayah}</span>`;
+      barsEl.appendChild(col);
+    });
+  }
+
+  // ---------- Tren Kebutuhan Obat (6 bulan terakhir) ----------
+  function renderTrenKebutuhan(){
+    const wrap = document.getElementById('trenKebutuhanWrap');
+    const now = new Date();
+    const bulanList = [];
+    for(let i=5;i>=0;i--){
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      bulanList.push({ key: d.getFullYear() + '-' + d.getMonth(), label: d.toLocaleDateString('id-ID', { month:'short' }), total:0 });
+    }
+
+    dataKebutuhan.forEach(k => {
+      const sumberTgl = k.tanggal_kebutuhan || k.created_at;
+      if(!sumberTgl) return;
+      const tgl = new Date(sumberTgl);
+      if(isNaN(tgl)) return;
+      const key = tgl.getFullYear() + '-' + tgl.getMonth();
+      const bucket = bulanList.find(b => b.key === key);
+      if(bucket) bucket.total += Number(k.jumlah_dibutuhkan) || 0;
+    });
+
+    const totalSemua = bulanList.reduce((a,b) => a+b.total, 0);
+    if(totalSemua === 0){
+      wrap.innerHTML = '<div class="empty-msg">Belum ada data kebutuhan obat untuk ditampilkan sebagai tren.</div>';
+      return;
+    }
+
+    const W = 640, H = 190, padX = 24, padY = 20;
+    const nilaiMax = Math.max(...bulanList.map(b => b.total), 1);
+    const stepX = (W - padX*2) / (bulanList.length - 1);
+    const titik = bulanList.map((b,i) => {
+      const x = padX + stepX*i;
+      const y = H - padY - ((b.total / nilaiMax) * (H - padY*2));
+      return { x, y, ...b };
+    });
+
+    const garis = titik.map(t => `${t.x},${t.y}`).join(' ');
+    const area = `${padX},${H-padY} ` + garis + ` ${titik[titik.length-1].x},${H-padY}`;
+
+    const svg = `
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <polygon points="${area}" fill="rgba(232,163,61,.12)"></polygon>
+        <polyline points="${garis}" fill="none" stroke="#e8a33d" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        ${titik.map(t => `<circle cx="${t.x}" cy="${t.y}" r="3.5" fill="#e8a33d"></circle><title>${t.label}: ${fmt(t.total)} unit</title>`).join('')}
+      </svg>`;
+
+    wrap.innerHTML = svg + '<div class="tren-labels">' + bulanList.map(b => `<span>${b.label}</span>`).join('') + '</div>';
+  }
+
+  // ---------- Kebutuhan Terbaru ----------
+  function renderKebutuhanTerbaru(){
+    const el = document.getElementById('listKebutuhanTerbaru');
+    const list = dataKebutuhan.slice(0, 5);
+    if(list.length === 0){
+      el.innerHTML = '<div class="empty-msg">Belum ada pengajuan kebutuhan obat.</div>';
+      return;
+    }
+    el.innerHTML = list.map(k => `
+      <div class="latest-row">
+        <div>
+          <div class="latest-main">${k.bencana || '-'}</div>
+          <div class="latest-sub">${k.obat || '-'} • ${k.wilayah || '-'}</div>
+        </div>
+        <div class="latest-right">
+          <span class="badge b-prioritas-${k.prioritas}">${prioritasLabel[k.prioritas] || k.prioritas || '-'}</span>
+          <span class="badge b-kstatus-${k.status}">${kStatusLabel[k.status] || k.status || '-'}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // ---------- Distribusi Terbaru ----------
+  function renderDistribusiTerbaru(){
+    const el = document.getElementById('listDistribusiTerbaru');
+    const list = dataDistribusi.slice(0, 5);
+    if(list.length === 0){
+      el.innerHTML = '<div class="empty-msg">Belum ada data pengiriman distribusi.</div>';
+      return;
+    }
+    el.innerHTML = list.map(d => `
+      <div class="latest-row">
+        <div>
+          <div class="latest-main">${d.nomor_resi || '-'}</div>
+          <div class="latest-sub">${d.obat || '-'} → ${d.tujuan || '-'}</div>
+        </div>
+        <div class="latest-right">
+          <span class="badge b-dstatus-${d.status}">${dStatusLabel[d.status] || d.status || '-'}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // ---------- Jam pembaruan ----------
   function tick(){
     const now = new Date();
     const h = String(now.getHours()).padStart(2,'0');
@@ -301,6 +622,9 @@
     document.getElementById('clock').textContent = `Data terakhir diperbaharui: ${h}.${m}.${s} WIB`;
   }
   tick(); setInterval(tick, 1000);
+
+  // ---------- Mulai ----------
+  muatSemuaData();
 </script>
 </body>
 </html>
