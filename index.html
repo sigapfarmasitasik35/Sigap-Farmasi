@@ -308,6 +308,7 @@
     <div class="panels-grid">
       <div class="panel">
         <h3>Peta Ketersediaan Faskes <a href="fasilitas.html">Lihat semua &rarr;</a></h3>
+        <div class="empty-msg" id="petaCatatan" style="display:none;padding:8px 2px;"></div>
         <div class="map-box" id="petaDashboard"></div>
       </div>
 
@@ -385,17 +386,45 @@
     return 'aman';
   }
 
+  // ---------- Catatan status/error per tabel, dipakai untuk pesan diagnostik di tiap panel ----------
+  let statusTabel = {};
+
+  function pesanErrorRamah(nama, error){
+    const msg = (error && (error.message || String(error))) || 'Terjadi kesalahan yang tidak diketahui.';
+    if(/row-level security|permission denied|RLS/i.test(msg)){
+      return 'Akses ditolak oleh Row Level Security (RLS) untuk tabel "' + nama + '". Buat policy SELECT untuk tabel ini di Supabase.';
+    }
+    if(/relation .* does not exist|could not find the table/i.test(msg)){
+      return 'Tabel "' + nama + '" belum ada di database Supabase.';
+    }
+    if(/Failed to fetch|NetworkError/i.test(msg)){
+      return 'Tidak bisa terhubung ke Supabase. Cek koneksi internet.';
+    }
+    return 'Gagal memuat tabel "' + nama + '": ' + msg;
+  }
+
   // ---------- Ambil satu tabel dari Supabase (aman kalau tabel belum ada) ----------
   async function ambilTabel(nama, kolomUrut, naik){
-    if(!db) return [];
+    if(!db){ statusTabel[nama] = 'Koneksi Supabase belum berhasil dibuat.'; return []; }
     try{
       const { data, error } = await db.from(nama).select('*').order(kolomUrut, { ascending: naik });
-      if(error){ console.warn('Gagal memuat tabel "' + nama + '":', error.message); return []; }
+      if(error){
+        statusTabel[nama] = pesanErrorRamah(nama, error);
+        console.warn('Gagal memuat tabel "' + nama + '":', error.message);
+        return [];
+      }
+      statusTabel[nama] = null;
       return data || [];
     }catch(e){
+      statusTabel[nama] = pesanErrorRamah(nama, e);
       console.warn('Gagal memuat tabel "' + nama + '":', e);
       return [];
     }
+  }
+
+  // Pesan kosong: pakai pesan error kalau ada, kalau tidak pakai pesan default (tabel kosong beneran)
+  function catatanKosong(nama, pesanDefault){
+    return statusTabel[nama] || pesanDefault;
   }
 
   async function muatSemuaData(){
@@ -464,14 +493,23 @@
     const el = document.getElementById('petaDashboard');
     if(!petaDb){
       petaDb = L.map(el, { scrollWheelZoom:true }).setView([-2.5, 118], 4.3);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
+      // Tile OpenStreetMap standar: gratis, tanpa perlu API key (sebelumnya CARTO
+      // yang sekarang mewajibkan API key untuk akses gratisnya, sehingga muncul
+      // tulisan "api key required" di atas peta).
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19
       }).addTo(petaDb);
       petaDb.markerLayer = L.layerGroup().addTo(petaDb);
     }
     petaDb.markerLayer.clearLayers();
-    if(dataFasilitas.length === 0){ return; }
+    const catatanEl = document.getElementById('petaCatatan');
+    if(dataFasilitas.length === 0){
+      catatanEl.textContent = catatanKosong('fasilitas', 'Belum ada data fasilitas. Tambahkan lewat menu Fasilitas Kesehatan.');
+      catatanEl.style.display = 'block';
+      return;
+    }
+    catatanEl.style.display = 'none';
     const titikValid = [];
     dataFasilitas.forEach(f => {
       if(!f.lat || !f.lng) return;
@@ -497,7 +535,7 @@
     const yEl = document.getElementById('chartWilayahY');
 
     if(dataDistribusi.length === 0){
-      document.getElementById('chartWilayahWrap').innerHTML = '<div class="empty-msg">Belum ada data distribusi obat.</div>';
+      document.getElementById('chartWilayahWrap').innerHTML = '<div class="empty-msg">' + catatanKosong('distribusi_obat', 'Belum ada data distribusi obat. Tambahkan lewat menu Distribusi Obat.') + '</div>';
       return;
     }
 
@@ -559,7 +597,9 @@
 
     const totalSemua = bulanList.reduce((a,b) => a + b.kebutuhan + b.distribusi, 0);
     if(totalSemua === 0){
-      wrap.innerHTML = '<div class="empty-msg">Belum ada data kebutuhan maupun distribusi untuk ditampilkan sebagai tren.</div>';
+      const pesanK = statusTabel['kebutuhan_obat'];
+      const pesanD = statusTabel['distribusi_obat'];
+      wrap.innerHTML = '<div class="empty-msg">' + (pesanK || pesanD || 'Belum ada data kebutuhan maupun distribusi untuk ditampilkan sebagai tren.') + '</div>';
       return;
     }
 
@@ -598,7 +638,7 @@
     const el = document.getElementById('listKebutuhanTerbaru');
     const list = dataKebutuhan.slice(0, 5);
     if(list.length === 0){
-      el.innerHTML = '<div class="empty-msg">Belum ada pengajuan kebutuhan obat.</div>';
+      el.innerHTML = '<div class="empty-msg">' + catatanKosong('kebutuhan_obat', 'Belum ada pengajuan kebutuhan obat.') + '</div>';
       return;
     }
     el.innerHTML = list.map(k => `
@@ -619,7 +659,7 @@
     const el = document.getElementById('listDistribusiTerbaru');
     const list = dataDistribusi.slice(0, 5);
     if(list.length === 0){
-      el.innerHTML = '<div class="empty-msg">Belum ada data pengiriman distribusi.</div>';
+      el.innerHTML = '<div class="empty-msg">' + catatanKosong('distribusi_obat', 'Belum ada data pengiriman distribusi.') + '</div>';
       return;
     }
     el.innerHTML = list.map(d => `
