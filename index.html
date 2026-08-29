@@ -5,292 +5,292 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SIGAP-FARMASI — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#070f14;
-    --panel:#0e1922;
-    --panel-2:#132531;
-    --border:#1f3846;
-    --border-soft:#152a34;
-    --green:#3ecf8e;
+    --bg:#0b0f10;
+    --panel:#12181a;
+    --panel-2:#161d1f;
+    --border:#242c2e;
+    --brand:#e8a33d;
+    --brand-soft:#3a2e14;
+    --green:#1fae76;
     --green-soft:#123527;
-    --amber:#e8a33d;
-    --amber-soft:#3a2e14;
-    --red:#e2685a;
+    --red:#e5484d;
     --red-soft:#3a1e1a;
-    --text:#f2f7f6;
-    --muted:#87a3aa;
-    --muted-dim:#4d6a71;
+    --orange:#f5a524;
+    --text:#f2f4f3;
+    --text-dim:#93a1a0;
+    --text-faint:#5c6b6a;
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{font-family:'Inter', sans-serif; background:var(--bg); color:var(--text); min-height:100vh;}
-  a{color:inherit; text-decoration:none;}
-
-  .topline{height:3px; background:linear-gradient(90deg, var(--amber), transparent 60%);}
-
-  .app{display:grid; grid-template-columns:264px 1fr; min-height:100vh;}
-  @media (max-width:920px){ .app{grid-template-columns:1fr;} .sidebar{display:none;} }
-
-  .sidebar{border-right:1px solid var(--border); padding:24px 18px; display:flex; flex-direction:column;}
-  .brand{display:flex; align-items:center; gap:11px; padding:6px 6px 28px;}
-  .brand-mark{width:34px; height:34px; flex-shrink:0;}
-  .brand-name{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:17px; letter-spacing:0.04em;}
-  .brand-name span{color:var(--amber);}
-
-  .menu-label{font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:0.1em; color:var(--muted-dim); padding:16px 12px 8px;}
-  nav a{
-    display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px;
-    font-size:14px; color:var(--muted); margin-bottom:2px; transition:background 0.15s ease, color 0.15s ease;
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    display:flex;
+    height:100vh;
+    overflow:hidden;
   }
-  nav a:hover{background:var(--panel-2); color:var(--text);}
-  nav a.active{background:var(--amber-soft); color:var(--amber);}
-  nav a svg{width:17px; height:17px; flex-shrink:0;}
-  .sidebar-spacer{flex:1;}
+  a{color:inherit;text-decoration:none;}
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif;}
 
-  .sidebar-foot{
-    border-top:1px solid var(--border); padding-top:16px; margin-top:8px;
-    font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--muted-dim);
-    display:flex; justify-content:space-between;
+  .sidebar{
+    width:240px;flex-shrink:0;background:var(--panel);
+    border-right:1px solid var(--border);padding:16px 12px;
+    display:flex;flex-direction:column;gap:16px;
+    height:100vh;overflow-y:auto;
+  }
+  .brand{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:700;padding:0 6px;}
+  .brand span{color:var(--brand);}
+  .brand-icon{width:28px;height:28px;border-radius:7px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .menu-label{font-size:10px;letter-spacing:.08em;color:var(--text-faint);text-transform:uppercase;padding:0 10px;margin-bottom:5px;}
+  nav ul{list-style:none;display:flex;flex-direction:column;gap:1px;}
+  nav a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;color:var(--text-dim);text-decoration:none;font-size:13px;font-weight:500;transition:background .15s, color .15s; white-space:nowrap;}
+  nav a:hover{background:var(--panel-2);color:var(--text);}
+  nav a.active{background:var(--brand-soft);color:var(--brand);}
+  nav a svg{width:16px;height:16px;flex-shrink:0;}
+
+  .main{
+    flex:1;padding:14px 22px;min-width:0;
+    height:100vh; display:flex; flex-direction:column; overflow-y:auto;
   }
 
-  header.topbar{
-    display:flex; align-items:center; gap:16px; padding:20px 32px; border-bottom:1px solid var(--border);
+  .topbar{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-shrink:0;}
+  .menu-toggle{
+    display:none;width:34px;height:34px;flex-shrink:0;align-items:center;justify-content:center;
+    background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);cursor:pointer;
   }
-  .menu-toggle{display:none; width:20px; height:16px; flex-direction:column; justify-content:space-between; background:none; border:none; cursor:pointer;}
-  .menu-toggle span{display:block; height:2px; background:var(--muted); border-radius:2px;}
-  @media (max-width:920px){ .menu-toggle{display:flex;} }
-
-  .search{
-    flex:1; display:flex; align-items:center; gap:10px; background:var(--panel-2);
-    border:1px solid var(--border); border-radius:9px; padding:10px 14px; max-width:480px; color:var(--muted); font-size:13.5px;
+  .search-top{
+    flex:1;display:flex;align-items:center;gap:9px;background:var(--panel);
+    border:1px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--text-faint);
+    max-width:480px; min-width:0;
   }
-  .search svg{width:16px; height:16px; flex-shrink:0; opacity:0.7;}
-
+  .search-top input{background:none;border:none;outline:none;color:var(--text);font-size:13.5px;width:100%;min-width:0;}
   .avatar{
-    margin-left:auto; width:38px; height:38px; border-radius:9px; background:var(--amber);
-    color:#241a06; display:flex; align-items:center; justify-content:center;
-    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:13px; flex-shrink:0;
+    width:34px;height:34px;border-radius:9px;background:var(--brand);color:#241a06;font-weight:700;
+    font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;
   }
 
-  main{padding:32px;}
-  .page-title h1{font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:27px;}
-  .page-title p{margin-top:7px; color:var(--muted); font-size:14px;}
+  .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:14px;flex-shrink:0;}
+  .page-header h1{font-size:20px;font-weight:700;margin-bottom:3px;}
+  .page-header p{color:var(--text-dim);font-size:12.5px;}
+  .updated-badge{
+    display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--border);
+    padding:9px 14px;border-radius:9px;font-family:'IBM Plex Mono', monospace;font-size:11.5px;color:var(--text-faint);
+    white-space:nowrap;flex-shrink:0;
+  }
 
-  .section-row{display:flex; align-items:baseline; justify-content:space-between; margin:34px 0 15px; flex-wrap:wrap; gap:8px;}
-  .section-row h2{font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:16px;}
-  .updated{font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--muted-dim);}
+  .section-row{display:flex;align-items:baseline;justify-content:space-between;margin:22px 0 12px;flex-wrap:wrap;gap:8px;flex-shrink:0;}
+  .section-row h2{font-size:14px;font-weight:600;}
 
-  .stats-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:16px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;flex-shrink:0;}
   @media (max-width:1100px){ .stats-grid{grid-template-columns:repeat(2, 1fr);} }
   @media (max-width:560px){ .stats-grid{grid-template-columns:1fr;} }
 
   .stat-card{
-    background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:22px;
-    transition:transform 0.15s ease, border-color 0.15s ease;
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;
+    transition:transform .15s ease, border-color .15s ease;
   }
-  .stat-card:hover{transform:translateY(-2px); border-color:var(--border-soft);}
-  .stat-card.accent-amber{background:linear-gradient(160deg, var(--amber-soft), var(--panel) 65%); border-color:rgba(232,163,61,0.3);}
+  .stat-card:hover{transform:translateY(-2px);border-color:var(--text-faint);}
+  .stat-card.accent-amber{background:linear-gradient(160deg, var(--brand-soft), var(--panel) 65%);border-color:rgba(232,163,61,.3);}
+  .stat-card.accent-red{background:linear-gradient(160deg, var(--red-soft), var(--panel) 65%);border-color:rgba(229,72,77,.28);}
+  .stat-card.accent-green{background:linear-gradient(160deg, var(--green-soft), var(--panel) 65%);border-color:rgba(31,174,118,.28);}
 
-  .stat-top{display:flex; justify-content:space-between; align-items:flex-start;}
-  .stat-label{font-size:13.5px; color:var(--muted);}
-  .stat-icon{width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
-  .stat-icon svg{width:17px; height:17px;}
-  .accent-amber .stat-icon{background:rgba(232,163,61,0.18); color:var(--amber);}
-  .accent-red .stat-icon{background:rgba(226,104,90,0.16); color:#f0938a;}
-  .accent-green .stat-icon{background:rgba(62,207,142,0.16); color:var(--green);}
+  .stat-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .stat-label{font-size:13px;color:var(--text-dim);}
+  .stat-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .stat-icon svg{width:16px;height:16px;}
+  .accent-amber .stat-icon{background:rgba(232,163,61,.18);color:var(--brand);}
+  .accent-red .stat-icon{background:rgba(229,72,77,.18);color:var(--red);}
+  .accent-green .stat-icon{background:rgba(31,174,118,.18);color:var(--green);}
 
-  .stat-value{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:36px; margin-top:12px;}
-  .stat-foot{display:flex; align-items:center; gap:8px; margin-top:15px; font-size:12.5px;}
-  .pill{padding:3px 9px; border-radius:6px; font-family:'IBM Plex Mono', monospace; font-size:11px; font-weight:500;}
-  .pill.green{background:rgba(62,207,142,0.18); color:var(--green);}
-  .pill.red{background:rgba(226,104,90,0.18); color:#f0938a;}
-  .pill.amber{background:rgba(232,163,61,0.18); color:var(--amber);}
-  .stat-foot .note{color:var(--muted);}
+  .stat-value{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:32px;margin-top:10px;}
+  .stat-foot{display:flex;align-items:center;gap:8px;margin-top:13px;font-size:12px;flex-wrap:wrap;}
+  .pill{padding:3px 9px;border-radius:6px;font-family:'IBM Plex Mono', monospace;font-size:10.5px;font-weight:500;}
+  .pill.green{background:rgba(31,174,118,.18);color:var(--green);}
+  .pill.red{background:rgba(229,72,77,.18);color:var(--red);}
+  .pill.amber{background:rgba(232,163,61,.18);color:var(--brand);}
+  .stat-foot .note{color:var(--text-dim);}
 
-  .bar-track{margin-top:15px; height:5px; border-radius:4px; background:var(--border); overflow:hidden;}
-  .bar-fill{height:100%; border-radius:4px;}
-  .bar-fill.amber{background:var(--amber);}
+  .bar-track{margin-top:13px;height:4px;border-radius:3px;background:var(--border);overflow:hidden;}
+  .bar-fill{height:100%;border-radius:3px;}
+  .bar-fill.amber{background:var(--brand);}
   .bar-fill.green{background:var(--green);}
 
-  .panels-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:16px;}
+  .panels-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:6px;padding-bottom:14px;}
   @media (max-width:920px){ .panels-grid{grid-template-columns:1fr;} }
 
-  .panel{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:22px;}
-  .panel h3{font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; margin-bottom:16px;}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .panel h3{font-size:14px;font-weight:600;margin-bottom:14px;}
 
   .map-box{
-    position:relative; height:340px; border-radius:9px; overflow:hidden;
+    position:relative;height:300px;border-radius:9px;overflow:hidden;
     background:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 32px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 32px),
-      linear-gradient(160deg, #8fbfc9, #b3d9de);
+      repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 32px),
+      linear-gradient(160deg,#3a4a4a,#1c2426);
   }
-  .map-controls{position:absolute; top:14px; left:14px; display:flex; flex-direction:column; box-shadow:0 2px 6px rgba(0,0,0,0.25); border-radius:6px; overflow:hidden;}
-  .map-controls button{width:34px; height:34px; background:#fff; border:none; border-bottom:1px solid #ddd; font-size:16px; color:#333; cursor:pointer;}
+  .map-controls{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;box-shadow:0 2px 6px rgba(0,0,0,.35);border-radius:6px;overflow:hidden;}
+  .map-controls button{width:32px;height:32px;background:var(--panel-2);border:none;border-bottom:1px solid var(--border);font-size:15px;color:var(--text);cursor:pointer;}
   .map-controls button:last-child{border-bottom:none;}
-  .map-pin{width:11px; height:11px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 4px rgba(232,163,61,0.3); position:absolute;}
+  .map-pin{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(232,163,61,.3);position:absolute;}
 
-  .chart-box{height:340px; display:flex; align-items:flex-end; gap:14px; padding:0 4px; position:relative;}
-  .chart-y{position:absolute; left:0; top:0; bottom:28px; display:flex; flex-direction:column; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--muted-dim);}
-  .chart-bars{display:flex; align-items:flex-end; gap:16px; margin-left:44px; flex:1; height:100%; padding-bottom:28px; border-left:1px solid var(--border);}
-  .bar-col{display:flex; flex-direction:column; align-items:center; gap:8px; flex:1;}
-  .bar-col .bar{width:100%; max-width:42px; border-radius:5px 5px 0 0; background:var(--amber);}
-  .bar-col .lbl{font-size:10.5px; color:var(--muted-dim); font-family:'IBM Plex Mono', monospace;}
+  .chart-box{height:300px;display:flex;align-items:flex-end;gap:14px;padding:0 4px;position:relative;}
+  .chart-y{position:absolute;left:0;top:0;bottom:26px;display:flex;flex-direction:column;justify-content:space-between;font-family:'IBM Plex Mono', monospace;font-size:10px;color:var(--text-faint);}
+  .chart-bars{display:flex;align-items:flex-end;gap:16px;margin-left:40px;flex:1;height:100%;padding-bottom:26px;border-left:1px solid var(--border);}
+  .bar-col{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+  .bar-col .bar{width:100%;max-width:42px;border-radius:5px 5px 0 0;background:var(--brand);}
+  .bar-col .lbl{font-size:10px;color:var(--text-faint);font-family:'IBM Plex Mono', monospace;}
+
+  @media (max-width:900px){
+    .sidebar{display:none;}
+    .main{padding:14px;}
+    .menu-toggle{display:flex;}
+  }
 </style>
 </head>
 <body>
 
-<div class="topline"></div>
-<div class="app">
-
   <aside class="sidebar">
-    <div class="brand">
-      <svg class="brand-mark" viewBox="0 0 38 38" fill="none">
-        <rect x="1" y="1" width="36" height="36" rx="9" stroke="#e8a33d" stroke-width="1.4"/>
-        <path d="M19 9V29M9 19H29" stroke="#e8a33d" stroke-width="2.4" stroke-linecap="round"/>
-      </svg>
-      <div class="brand-name">SIGAP<span>FARMASI</span></div>
+    <div class="brand"><div class="brand-icon">+</div>SIGAP<span>FARMASI</span></div>
+    <div>
+      <div class="menu-label">Menu Utama</div>
+      <nav><ul>
+        <li><a href="index.html" class="active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard</a></li>
+        <li><a href="data-obat.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 4.5l6 6M15 9l4.5-4.5M9 15l-6 6M20 20l-4-4"/><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/></svg>
+          Data Obat</a></li>
+        <li><a href="fasilitas.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+          Fasilitas Kesehatan</a></li>
+        <li><a href="kebutuhan.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16.5V7.5a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 7.5v9a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73z"/></svg>
+          Kebutuhan Obat</a></li>
+        <li><a href="distribusi.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="5.5" cy="19.5" r="1.5"/><circle cx="18.5" cy="19.5" r="1.5"/></svg>
+          Distribusi Obat</a></li>
+        <li><a href="monitoring.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+          Monitoring Stok</a></li>
+      </ul></nav>
     </div>
-
-    <div class="menu-label">MENU UTAMA</div>
-    <nav>
-      <a href="/dashboard" class="active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        Dashboard
-      </a>
-      <a href="/data-obat">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3l8 8-6 6-8-8 6-6z"/><circle cx="17" cy="17" r="4"/></svg>
-        Data Obat
-      </a>
-      <a href="/fasilitas">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M9 8V5a3 3 0 013-3v0a3 3 0 013 3v3"/></svg>
-        Fasilitas Kesehatan
-      </a>
-      <a href="/kebutuhan">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l9 5v10l-9 5-9-5V7l9-5z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>
-        Kebutuhan Obat
-      </a>
-      <a href="/distribusi">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="7" width="15" height="10" rx="1.5"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.7"/><circle cx="18" cy="19" r="1.7"/></svg>
-        Distribusi Obat
-      </a>
-      <a href="/monitoring">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
-        Monitoring Stok
-      </a>
-    </nav>
-
-    <div class="menu-label">LAINNYA</div>
-    <nav>
-      <a href="/akun">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
-        Manajemen Akun
-      </a>
-      <a href="/laporan">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
-        Laporan
-      </a>
-      <a href="/pengaturan">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09A1.7 1.7 0 004.6 9a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 009 4.6a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06A1.7 1.7 0 0019.4 9c.14.36.5.6.9.6H21a2 2 0 010 4h-.09a1.7 1.7 0 00-1.51 1z"/></svg>
-        Pengaturan
-      </a>
-    </nav>
-
-    <div class="sidebar-spacer"></div>
-    <div class="sidebar-foot"><span>v1.0</span><span id="clock2">--:--:--</span></div>
+    <div>
+      <div class="menu-label">Lainnya</div>
+      <nav><ul>
+        <li><a href="akun.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          Manajemen Akun</a></li>
+        <li><a href="laporan.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          Laporan</a></li>
+        <li><a href="pengaturan.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Pengaturan</a></li>
+      </ul></nav>
+    </div>
   </aside>
 
-  <div>
-    <header class="topbar">
-      <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
-      <div class="search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-        Cari data...
+  <main class="main">
+
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="search-top">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Cari data...">
       </div>
       <div class="avatar">AD</div>
-    </header>
+    </div>
 
-    <main>
-      <div class="page-title">
+    <div class="page-header">
+      <div>
         <h1>Dashboard</h1>
-        <p>Ringkasan sistem pelayanan kefarmasian </p>
+        <p>Ringkasan sistem pelayanan kefarmasian bencana</p>
+      </div>
+      <div class="updated-badge" id="clock">Data terakhir diperbaharui: --:--:-- WIB</div>
+    </div>
+
+    <div class="section-row">
+      <h2>Statistik Utama</h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card accent-amber">
+        <div class="stat-top">
+          <span class="stat-label">Total Obat</span>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3l8 8-6 6-8-8 6-6z"/><circle cx="17" cy="17" r="4"/></svg></div>
+        </div>
+        <div class="stat-value">21</div>
+        <div class="stat-foot"><span class="pill green">+12%</span></div>
+        <div class="bar-track"><div class="bar-fill amber" style="width:78%"></div></div>
       </div>
 
-      <div class="section-row">
-        <h2>Statistik Utama</h2>
-        <span class="updated" id="clock">Data terakhir diperbaharui: --:--:-- WIB</span>
+      <div class="stat-card accent-red">
+        <div class="stat-top">
+          <span class="stat-label">Stok Kritis</span>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.8 17a2 2 0 001.7 3h15a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></div>
+        </div>
+        <div class="stat-value">4</div>
+        <div class="stat-foot"><span class="pill red">5%</span><span class="note">Perlu audit segera</span></div>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-card accent-amber">
-          <div class="stat-top">
-            <span class="stat-label">Total Obat</span>
-            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3l8 8-6 6-8-8 6-6z"/><circle cx="17" cy="17" r="4"/></svg></div>
-          </div>
-          <div class="stat-value">21</div>
-          <div class="stat-foot"><span class="pill green">+12%</span></div>
-          <div class="bar-track"><div class="bar-fill amber" style="width:78%"></div></div>
+      <div class="stat-card accent-amber">
+        <div class="stat-top">
+          <span class="stat-label">Kebutuhan Aktif</span>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7l9-5z"/></svg></div>
         </div>
+        <div class="stat-value">6</div>
+        <div class="stat-foot"><span class="pill amber">Darurat</span></div>
+        <div class="bar-track"><div class="bar-fill amber" style="width:55%"></div></div>
+      </div>
 
-        <div class="stat-card accent-red">
-          <div class="stat-top">
-            <span class="stat-label">Stok Kritis</span>
-            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.8 17a2 2 0 001.7 3h15a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></div>
-          </div>
-          <div class="stat-value">4</div>
-          <div class="stat-foot"><span class="pill red">5%</span> <span class="note">Perlu audit segera</span></div>
+      <div class="stat-card accent-green">
+        <div class="stat-top">
+          <span class="stat-label">Distribusi Bulan Ini</span>
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1.5"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.7"/><circle cx="18" cy="19" r="1.7"/></svg></div>
         </div>
+        <div class="stat-value">1</div>
+        <div class="stat-foot"><span class="pill green">+24%</span><span class="note">Naik dari bulan lalu</span></div>
+      </div>
+    </div>
 
-        <div class="stat-card accent-amber">
-          <div class="stat-top">
-            <span class="stat-label">Kebutuhan Aktif</span>
-            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7l9-5z"/></svg></div>
-          </div>
-          <div class="stat-value">6</div>
-          <div class="stat-foot"><span class="pill amber">Darurat</span></div>
-          <div class="bar-track"><div class="bar-fill amber" style="width:55%"></div></div>
-        </div>
+    <div class="section-row">
+      <h2>Sebaran &amp; Distribusi</h2>
+    </div>
 
-        <div class="stat-card accent-green">
-          <div class="stat-top">
-            <span class="stat-label">Distribusi Bulan Ini</span>
-            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1.5"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.7"/><circle cx="18" cy="19" r="1.7"/></svg></div>
+    <div class="panels-grid">
+      <div class="panel">
+        <h3>Peta Ketersediaan Faskes</h3>
+        <div class="map-box">
+          <div class="map-controls">
+            <button aria-label="Perbesar">+</button>
+            <button aria-label="Perkecil">−</button>
           </div>
-          <div class="stat-value">1</div>
-          <div class="stat-foot"><span class="pill green">+24%</span> <span class="note">Naik dari bulan lalu</span></div>
+          <div class="map-pin" style="top:40%; left:35%;"></div>
+          <div class="map-pin" style="top:60%; left:55%;"></div>
+          <div class="map-pin" style="top:30%; left:65%;"></div>
         </div>
       </div>
 
-      <div class="panels-grid" style="margin-top:34px;">
-        <div class="panel">
-          <h3>Peta Ketersediaan Faskes</h3>
-          <div class="map-box">
-            <div class="map-controls">
-              <button aria-label="Perbesar">+</button>
-              <button aria-label="Perkecil">−</button>
-            </div>
-            <div class="map-pin" style="top:40%; left:35%;"></div>
-            <div class="map-pin" style="top:60%; left:55%;"></div>
-            <div class="map-pin" style="top:30%; left:65%;"></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h3>Distribusi Per Wilayah</h3>
-          <div class="chart-box">
-            <div class="chart-y"><span>2200</span><span>1650</span><span>1100</span><span>550</span></div>
-            <div class="chart-bars">
-              <div class="bar-col"><div class="bar" style="height:88%"></div><span class="lbl">Wil. A</span></div>
-              <div class="bar-col"><div class="bar" style="height:34%"></div><span class="lbl">Wil. B</span></div>
-              <div class="bar-col"><div class="bar" style="height:20%"></div><span class="lbl">Wil. C</span></div>
-            </div>
+      <div class="panel">
+        <h3>Distribusi Per Wilayah</h3>
+        <div class="chart-box">
+          <div class="chart-y"><span>2200</span><span>1650</span><span>1100</span><span>550</span></div>
+          <div class="chart-bars">
+            <div class="bar-col"><div class="bar" style="height:88%"></div><span class="lbl">Wil. A</span></div>
+            <div class="bar-col"><div class="bar" style="height:34%"></div><span class="lbl">Wil. B</span></div>
+            <div class="bar-col"><div class="bar" style="height:20%"></div><span class="lbl">Wil. C</span></div>
           </div>
         </div>
       </div>
-    </main>
-  </div>
-</div>
+    </div>
+
+  </main>
 
 <script>
   function tick(){
@@ -299,7 +299,6 @@
     const m = String(now.getMinutes()).padStart(2,'0');
     const s = String(now.getSeconds()).padStart(2,'0');
     document.getElementById('clock').textContent = `Data terakhir diperbaharui: ${h}.${m}.${s} WIB`;
-    document.getElementById('clock2').textContent = `${h}:${m}:${s}`;
   }
   tick(); setInterval(tick, 1000);
 </script>
