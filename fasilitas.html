@@ -518,9 +518,11 @@
     // scrollWheelZoom diaktifkan supaya peta bisa diperbesar/perkecil
     // cukup dengan menggulirkan mouse (sebelumnya false / harus klik dulu)
     peta = L.map('peta', { scrollWheelZoom:true }).setView([-2.5, 118], 4.3);
-    // Tile CARTO Voyager (berwarna) — sebelumnya "dark_all" yang membuat peta jadi hitam
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
+    // Tile OpenStreetMap standar: gratis, tanpa perlu API key (sebelumnya CARTO
+    // yang sekarang mewajibkan API key untuk akses gratisnya, sehingga muncul
+    // tulisan "api key required" di atas peta). Disamakan dengan index.html.
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19
     }).addTo(peta);
     markerLayer = L.layerGroup().addTo(peta);
