@@ -261,7 +261,7 @@
       </div>
 
       <div class="field-row">
-        <div class="field"><label>Asal</label><input type="text" id="dAsal" placeholder="Contoh: Gudang Pusat Dinkes"></div>
+        <div class="field"><label>Asal</label><select id="dAsal"><option value="">Memuat data fasilitas...</option></select></div>
         <div class="field"><label>Tujuan</label><select id="dTujuan"><option value="">Memuat data fasilitas...</option></select></div>
       </div>
 
@@ -294,8 +294,13 @@
 <script>
   // =========================================================
   // KONEKSI SUPABASE
-  // Pastikan tabel "distribusi_obat" sudah ada dan sudah punya
-  // RLS Policy untuk select/insert/update/delete (lihat penjelasan chat).
+  // Pastikan tabel "distribusi_obat" sudah ada.
+  // PENTING: kolom "nomor_resi" TIDAK BOLEH punya constraint UNIQUE,
+  // karena 1 nomor resi sengaja dipakai untuk beberapa baris (1 baris
+  // per jenis obat dalam 1 pengiriman). Kalau masih ada constraint
+  // UNIQUE bernama distribusi_obat_nomor_resi_key, jalankan sekali di
+  // Supabase SQL Editor:
+  //   ALTER TABLE distribusi_obat DROP CONSTRAINT distribusi_obat_nomor_resi_key;
   // Kalau koneksi/tabel belum siap, halaman ini tetap berjalan
   // memakai DATA CONTOH (mode demo, tidak permanen).
   // =========================================================
@@ -379,9 +384,10 @@
     }catch(e){ console.warn('Gagal memuat daftar obat:', e); }
   }
 
-  async function muatDropdownTujuan(){
-    const sel = document.getElementById('dTujuan');
-    sel.innerHTML = '<option value="">Pilih Fasilitas Tujuan</option>';
+  // ---------- Isi dropdown Asal & Tujuan dari tabel "fasilitas" (dipakai untuk keduanya) ----------
+  async function muatDropdownFasilitas(selectId, teksPlaceholder){
+    const sel = document.getElementById(selectId);
+    sel.innerHTML = `<option value="">${teksPlaceholder}</option>`;
     if(!db) return;
     try{
       const { data, error } = await db.from('fasilitas').select('nama').order('nama', { ascending:true });
@@ -391,7 +397,7 @@
         opt.value = f.nama; opt.textContent = f.nama;
         sel.appendChild(opt);
       });
-    }catch(e){ console.warn('Gagal memuat daftar fasilitas:', e); }
+    }catch(e){ console.warn('Gagal memuat daftar fasilitas untuk ' + selectId + ':', e); }
   }
 
   // ---------- Baris obat (bisa lebih dari satu, dalam 1 pengiriman/resi) ----------
@@ -433,28 +439,42 @@
   function buatNomorResiOtomatis(){
     const tgl = new Date();
     const kode = tgl.getFullYear().toString() + String(tgl.getMonth()+1).padStart(2,'0') + String(tgl.getDate()).padStart(2,'0');
-    const acak = Math.floor(1000 + Math.random()*9000);
-    return 'DIST-' + kode + '-' + acak;
+    const jam = String(tgl.getHours()).padStart(2,'0') + String(tgl.getMinutes()).padStart(2,'0') + String(tgl.getSeconds()).padStart(2,'0');
+    const acak = Math.floor(100 + Math.random()*900);
+    // Format diperkaya dengan jam:menit:detik + acak supaya risiko tabrakan antar
+    // pengiriman berbeda jauh lebih kecil dibanding hanya tanggal + 4 digit acak.
+    return 'DIST-' + kode + '-' + jam + acak;
   }
 
   async function bukaModalKirim(){
     document.getElementById('dResi').value = buatNomorResiOtomatis();
-    document.getElementById('dAsal').value = '';
     document.getElementById('dKurir').value = '';
     document.getElementById('dTanggal').value = new Date().toISOString().slice(0,10);
     document.getElementById('dStatus').value = 'Menunggu';
 
     document.getElementById('kirimModal').classList.add('show');
-    await Promise.all([ muatOpsiObat(), muatDropdownTujuan() ]);
+    await Promise.all([
+      muatOpsiObat(),
+      muatDropdownFasilitas('dAsal', 'Pilih Fasilitas Asal'),
+      muatDropdownFasilitas('dTujuan', 'Pilih Fasilitas Tujuan')
+    ]);
     resetDaftarObat();
   }
   function tutupModalKirim(){
     document.getElementById('kirimModal').classList.remove('show');
   }
 
+  function pesanErrorRamahDistribusi(error){
+    const msg = (error && error.message) || String(error);
+    if(/duplicate key value violates unique constraint.*nomor_resi/i.test(msg)){
+      return 'Gagal menyimpan: kolom nomor_resi di tabel distribusi_obat masih punya constraint UNIQUE, padahal 1 resi dipakai untuk beberapa obat. Jalankan sekali di Supabase SQL Editor: ALTER TABLE distribusi_obat DROP CONSTRAINT distribusi_obat_nomor_resi_key;';
+    }
+    return 'Gagal menyimpan ke Supabase: ' + msg;
+  }
+
   async function simpanDistribusi(){
     const nomor_resi = document.getElementById('dResi').value.trim();
-    const asal = document.getElementById('dAsal').value.trim();
+    const asal = document.getElementById('dAsal').value;
     const tujuan = document.getElementById('dTujuan').value;
     const kurir = document.getElementById('dKurir').value.trim();
     const tanggal_kirim = document.getElementById('dTanggal').value || null;
@@ -497,7 +517,7 @@
     if(db && !modeDemo){
       const { error } = await db.from('distribusi_obat').insert(daftarPayload);
       if(error){
-        tampilkanToast('Gagal menyimpan ke Supabase: ' + error.message, true);
+        tampilkanToast(pesanErrorRamahDistribusi(error), true);
         return;
       }
       await loadDistribusi();
