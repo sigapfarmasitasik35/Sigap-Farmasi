@@ -127,10 +127,11 @@
   .status-diproses{background:var(--blue-soft);color:var(--blue);}
   .status-terpenuhi{background:var(--green-soft);color:var(--green);}
 
-  .pemenuhan-wrap{display:flex;flex-direction:column;gap:4px;min-width:110px;cursor:pointer;}
+  .pemenuhan-wrap{display:flex;flex-direction:column;gap:4px;min-width:130px;cursor:pointer;}
   .pemenuhan-angka{font-size:11.5px;color:var(--text-dim);}
   .pemenuhan-bar{height:5px;border-radius:4px;background:var(--panel);overflow:hidden;}
   .pemenuhan-bar-isi{height:100%;background:var(--brand);}
+  .pemenuhan-link-note{font-size:10px;color:var(--blue);margin-top:1px;}
 
   .empty-msg{color:var(--text-faint);font-size:13px;text-align:center;padding:36px 12px;white-space:normal;}
 
@@ -143,6 +144,7 @@
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;}
   .modal-overlay.show{display:flex;}
   .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:620px;padding:26px;max-height:90vh;overflow-y:auto;position:relative;}
+  .modal-box.modal-kecil{max-width:440px;}
   .modal-box h3{font-size:19px;font-weight:700;margin-bottom:20px;}
   .modal-close{position:absolute;top:22px;right:22px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;line-height:1;padding:4px;}
   .modal-close:hover{color:var(--text);}
@@ -150,6 +152,7 @@
   .field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:7px;}
   .field input,.field select,.field textarea{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;font-family:inherit;}
   .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);}
+  .field input[readonly]{color:var(--text-faint);}
   .field textarea{resize:vertical;min-height:64px;}
   .field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393a1a0' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px;}
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -161,6 +164,17 @@
   .obat-hapus{width:34px;height:38px;flex-shrink:0;border-radius:8px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-dim);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
   .obat-hapus:hover{color:var(--red);border-color:var(--red);}
   .obat-hapus:disabled{opacity:.35;cursor:not-allowed;}
+
+  /* ---------- Modal Perbarui Pemenuhan ---------- */
+  .ringkasan-pemenuhan{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
+  .ringkasan-pemenuhan .baris{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;color:var(--text-dim);}
+  .ringkasan-pemenuhan .baris b{color:var(--text);font-weight:600;}
+  .kotak-link-distribusi{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--blue-soft);border:1px solid rgba(59,158,255,.35);border-radius:8px;padding:10px 12px;margin-bottom:16px;}
+  .kotak-link-distribusi .teks{font-size:12px;color:var(--blue);line-height:1.4;}
+  .kotak-link-distribusi .teks b{font-weight:700;}
+  .kotak-link-distribusi button{flex-shrink:0;background:var(--blue);color:#04101c;border:none;padding:7px 12px;border-radius:7px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .kotak-link-distribusi button:hover{opacity:.88;}
+  .kotak-tanpa-link{background:var(--panel-2);border:1px dashed var(--border);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:var(--text-faint);line-height:1.4;}
 
   .toast{position:fixed;bottom:24px;right:24px;background:var(--brand);color:#241a06;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:10000;max-width:360px;}
   .toast.error{background:var(--red);color:#fff;}
@@ -324,6 +338,34 @@
     </div>
   </div>
 
+  <!-- ========== MODAL PERBARUI PEMENUHAN ========== -->
+  <div class="modal-overlay" id="pemenuhanModal">
+    <div class="modal-box modal-kecil">
+      <button class="modal-close" onclick="tutupModalPemenuhan()">✕</button>
+      <h3>Perbarui Pemenuhan</h3>
+
+      <div class="ringkasan-pemenuhan">
+        <div class="baris"><span>Bencana</span><b id="pBencana">-</b></div>
+        <div class="baris"><span>Obat</span><b id="pObat">-</b></div>
+        <div class="baris"><span>Faskes Tujuan</span><b id="pFaskes">-</b></div>
+        <div class="baris"><span>Jumlah Dibutuhkan</span><b id="pDibutuhkan">-</b></div>
+      </div>
+
+      <div id="pLinkDistribusiWrap"></div>
+
+      <div class="field">
+        <label>Jumlah Terpenuhi Saat Ini</label>
+        <input type="number" id="pJumlahTerpenuhi" min="0">
+        <div class="field-hint" style="font-size:11.5px;color:var(--text-faint);margin-top:5px;">Isi angka final sesuai kondisi sebenarnya di lapangan, lalu simpan.</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="tutupModalPemenuhan()">Batal</button>
+        <button class="btn-primary" onclick="simpanPemenuhan()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
 <script>
@@ -333,6 +375,14 @@
   // tetap berjalan memakai DATA CONTOH (mode demo, tidak permanen).
   // Dropdown Fasilitas & Obat diambil otomatis dari tabel
   // "fasilitas" dan "obat" yang sudah ada di Supabase.
+  //
+  // LINK KE DISTRIBUSI OBAT: setiap kali data dimuat, halaman ini
+  // juga mengambil tabel "distribusi_obat" (hanya baris berstatus
+  // "Diterima") untuk dicocokkan dengan faskes_tujuan + nama obat
+  // yang sama. Total unit yang sudah diterima lewat jalur distribusi
+  // ditampilkan sebagai referensi di modal "Perbarui Pemenuhan" —
+  // tidak menimpa data secara otomatis/diam-diam, supaya pemenuhan
+  // dari sumber lain (di luar sistem distribusi ini) tidak tertimpa.
   // =========================================================
   const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
@@ -347,29 +397,46 @@
   }
 
   let dataKebutuhan = [];
+  let dataDistribusiDiterima = []; // hanya baris distribusi_obat berstatus "Diterima"
   let modeDemo = true;
   let opsiObatHTML = '<option value="">Pilih Obat</option>';
   let idBarisObat = 0;
+  let idPemenuhanAktif = null; // id kebutuhan yang sedang dibuka di modal pemenuhan
 
   const prioritasLabel = { tinggi:'Tinggi', sedang:'Sedang', rendah:'Rendah' };
   const statusLabel = { menunggu:'Menunggu', diproses:'Diproses', terpenuhi:'Terpenuhi' };
 
-  // ---------- Muat data kebutuhan (tabel utama) ----------
+  // ---------- Muat data kebutuhan + data distribusi (untuk link) ----------
   async function loadKebutuhan(){
     if(!db){ renderTabel(); return; }
     try{
-      const { data, error } = await db.from('kebutuhan_obat').select('*').order('created_at', { ascending:false });
-      if(error){
-        console.warn('Memakai data contoh (Supabase belum siap):', error.message);
+      const [hasilKebutuhan, hasilDistribusi] = await Promise.all([
+        db.from('kebutuhan_obat').select('*').order('created_at', { ascending:false }),
+        db.from('distribusi_obat').select('tujuan,obat,jumlah,status').eq('status','Diterima')
+      ]);
+
+      if(hasilKebutuhan.error){
+        console.warn('Memakai data contoh (Supabase belum siap):', hasilKebutuhan.error.message);
         modeDemo = true;
-      } else if (data){
-        dataKebutuhan = data;
+      } else if (hasilKebutuhan.data){
+        dataKebutuhan = hasilKebutuhan.data;
         modeDemo = false;
       }
+
+      // Kegagalan memuat distribusi tidak menggagalkan halaman ini — cukup
+      // berarti kotak "link distribusi" tidak muncul di modal pemenuhan.
+      dataDistribusiDiterima = (!hasilDistribusi.error && hasilDistribusi.data) ? hasilDistribusi.data : [];
     }catch(e){
       console.warn('Memakai data contoh (Supabase belum siap):', e);
     }
     renderTabel();
+  }
+
+  // Total unit yang sudah "Diterima" via Distribusi Obat, untuk faskes + obat tertentu
+  function jumlahDiterimaViaDistribusi(faskesTujuan, obat){
+    return dataDistribusiDiterima
+      .filter(d => d.tujuan === faskesTujuan && d.obat === obat)
+      .reduce((total, d) => total + (Number(d.jumlah) || 0), 0);
   }
 
   function renderTabel(){
@@ -387,6 +454,8 @@
       const dibutuhkan = Number(k.jumlah_dibutuhkan) || 0;
       const terpenuhi = Number(k.jumlah_terpenuhi) || 0;
       const persen = dibutuhkan > 0 ? Math.min(100, Math.round((terpenuhi / dibutuhkan) * 100)) : 0;
+      const diterimaViaDistribusi = jumlahDiterimaViaDistribusi(k.faskes_tujuan, k.obat);
+      const adaSelisihBelumDicatat = diterimaViaDistribusi > 0 && diterimaViaDistribusi !== terpenuhi;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -395,9 +464,10 @@
         <td>${k.faskes_tujuan || '-'}</td>
         <td>${k.obat || '-'}</td>
         <td>
-          <div class="pemenuhan-wrap" title="Klik untuk perbarui jumlah terpenuhi" onclick="perbaruiPemenuhan('${k.id}')">
+          <div class="pemenuhan-wrap" title="Klik untuk perbarui jumlah terpenuhi" onclick="bukaModalPemenuhan('${k.id}')">
             <span class="pemenuhan-angka">${terpenuhi}/${dibutuhkan} (${persen}%)</span>
             <div class="pemenuhan-bar"><div class="pemenuhan-bar-isi" style="width:${persen}%"></div></div>
+            ${adaSelisihBelumDicatat ? `<span class="pemenuhan-link-note">↳ ${diterimaViaDistribusi} diterima via Distribusi</span>` : ''}
           </div>
         </td>
         <td><span class="badge prioritas-${k.prioritas}">${prioritasLabel[k.prioritas] || k.prioritas}</span></td>
@@ -475,7 +545,7 @@
     tambahBarisObat();
   }
 
-  // ---------- Buka / tutup modal ----------
+  // ---------- Buka / tutup modal pengajuan ----------
   async function bukaModalAjukan(){
     document.getElementById('kBencana').value = '';
     document.getElementById('kJenisBencana').value = '';
@@ -553,21 +623,58 @@
     tampilkanToast('Kebutuhan "' + bencana + '" berhasil diajukan dengan ' + daftarPayload.length + ' jenis obat' + (modeDemo ? ' (mode demo, belum tersimpan permanen).' : '.'));
   }
 
-  // ---------- Perbarui jumlah terpenuhi ----------
-  async function perbaruiPemenuhan(id){
+  // ---------- Buka / tutup modal Perbarui Pemenuhan (menggantikan prompt()) ----------
+  function bukaModalPemenuhan(id){
     const item = dataKebutuhan.find(k => String(k.id) === String(id));
     if(!item) return;
-    const nilaiBaru = prompt('Update jumlah "' + item.obat + '" yang sudah terpenuhi untuk "' + item.bencana + '" (dari total ' + item.jumlah_dibutuhkan + '):', item.jumlah_terpenuhi);
-    if(nilaiBaru === null) return;
-    const angka = parseInt(nilaiBaru);
+    idPemenuhanAktif = id;
+
+    document.getElementById('pBencana').textContent = item.bencana || '-';
+    document.getElementById('pObat').textContent = item.obat || '-';
+    document.getElementById('pFaskes').textContent = item.faskes_tujuan || '-';
+    document.getElementById('pDibutuhkan').textContent = item.jumlah_dibutuhkan ?? '-';
+    document.getElementById('pJumlahTerpenuhi').value = item.jumlah_terpenuhi ?? 0;
+
+    const diterima = jumlahDiterimaViaDistribusi(item.faskes_tujuan, item.obat);
+    const wrapLink = document.getElementById('pLinkDistribusiWrap');
+    if(diterima > 0){
+      wrapLink.innerHTML = `
+        <div class="kotak-link-distribusi">
+          <div class="teks">Tercatat <b>${diterima} unit</b> "${item.obat}" sudah <b>Diterima</b> di "${item.faskes_tujuan || '-'}" lewat menu Distribusi Obat.</div>
+          <button type="button" onclick="pakaiAngkaDariDistribusi()">Pakai angka ini</button>
+        </div>`;
+    } else {
+      wrapLink.innerHTML = `<div class="kotak-tanpa-link">Belum ada pengiriman berstatus "Diterima" yang tercatat di menu Distribusi Obat untuk faskes &amp; obat ini. Isi jumlah terpenuhi secara manual sesuai kondisi di lapangan.</div>`;
+    }
+
+    document.getElementById('pemenuhanModal').classList.add('show');
+  }
+
+  function tutupModalPemenuhan(){
+    document.getElementById('pemenuhanModal').classList.remove('show');
+    idPemenuhanAktif = null;
+  }
+
+  function pakaiAngkaDariDistribusi(){
+    const item = dataKebutuhan.find(k => String(k.id) === String(idPemenuhanAktif));
+    if(!item) return;
+    const diterima = jumlahDiterimaViaDistribusi(item.faskes_tujuan, item.obat);
+    document.getElementById('pJumlahTerpenuhi').value = diterima;
+  }
+
+  async function simpanPemenuhan(){
+    const item = dataKebutuhan.find(k => String(k.id) === String(idPemenuhanAktif));
+    if(!item) return;
+
+    const angka = parseInt(document.getElementById('pJumlahTerpenuhi').value);
     if(isNaN(angka) || angka < 0){
       tampilkanToast('Masukkan angka yang valid.', true);
       return;
     }
-    const statusBaru = angka >= item.jumlah_dibutuhkan ? 'terpenuhi' : (angka > 0 ? 'diproses' : item.status);
+    const statusBaru = angka >= item.jumlah_dibutuhkan ? 'terpenuhi' : (angka > 0 ? 'diproses' : 'menunggu');
 
     if(db && !modeDemo){
-      const { error } = await db.from('kebutuhan_obat').update({ jumlah_terpenuhi: angka, status: statusBaru }).eq('id', id);
+      const { error } = await db.from('kebutuhan_obat').update({ jumlah_terpenuhi: angka, status: statusBaru }).eq('id', item.id);
       if(error){ tampilkanToast('Gagal memperbarui: ' + error.message, true); return; }
       await loadKebutuhan();
     } else {
@@ -575,6 +682,7 @@
       item.status = statusBaru;
       renderTabel();
     }
+    tutupModalPemenuhan();
     tampilkanToast('Pemenuhan "' + item.obat + '" untuk "' + item.bencana + '" diperbarui.');
   }
 
