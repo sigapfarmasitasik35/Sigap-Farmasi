@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){
+    try{
+      if(!localStorage.getItem('sigapSesi')){ window.location.href = 'login.html'; }
+    }catch(e){ window.location.href = 'login.html'; }
+  })();
+</script>
 <title>Sigap-Farmasi – Kebutuhan Obat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +46,6 @@
   }
   h1,h2,.brand{font-family:'Space Grotesk',sans-serif;}
 
-  /* ---------- Sidebar ---------- */
   .sidebar{
     width:240px;flex-shrink:0;background:var(--panel);
     border-right:1px solid var(--border);padding:16px 12px;
@@ -56,7 +62,6 @@
   nav a.active{background:var(--brand-soft);color:var(--brand);}
   nav a svg{width:16px;height:16px;flex-shrink:0;}
 
-  /* ---------- Main ---------- */
   .main{
     flex:1;padding:14px 22px;min-width:0;
     height:100vh; display:flex; flex-direction:column; overflow:hidden;
@@ -77,6 +82,8 @@
     width:34px;height:34px;border-radius:9px;background:var(--brand);color:#241a06;font-weight:700;
     font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;
   }
+  .logout-btn{width:34px;height:34px;border-radius:9px;background:var(--panel-2);border:1px solid var(--border);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-left:8px;}
+  .logout-btn:hover{color:var(--red);border-color:var(--red);}
 
   .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:14px;flex-shrink:0;}
   .page-header h1{font-size:20px;font-weight:700;margin-bottom:3px;}
@@ -91,7 +98,6 @@
 
   .content{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:14px;}
 
-  /* ---------- Panel tabel kebutuhan ---------- */
   .list-panel{
     background:var(--panel);border:1px solid var(--border);border-radius:12px;
     padding:14px; display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;
@@ -140,7 +146,6 @@
   .aksi button:hover{color:var(--text);border-color:var(--text-faint);}
   .aksi button.del:hover{color:var(--red);border-color:var(--red);}
 
-  /* ---------- Modal ---------- */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;}
   .modal-overlay.show{display:flex;}
   .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:620px;padding:26px;max-height:90vh;overflow-y:auto;position:relative;}
@@ -158,14 +163,12 @@
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
 
-  /* ---------- Daftar obat multi-baris ---------- */
   .obat-row{display:grid;grid-template-columns:1fr 100px 34px;gap:8px;margin-bottom:8px;align-items:center;}
   .obat-row select, .obat-row input{margin:0;}
   .obat-hapus{width:34px;height:38px;flex-shrink:0;border-radius:8px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-dim);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
   .obat-hapus:hover{color:var(--red);border-color:var(--red);}
   .obat-hapus:disabled{opacity:.35;cursor:not-allowed;}
 
-  /* ---------- Modal Perbarui Pemenuhan ---------- */
   .ringkasan-pemenuhan{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
   .ringkasan-pemenuhan .baris{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;color:var(--text-dim);}
   .ringkasan-pemenuhan .baris b{color:var(--text);font-weight:600;}
@@ -190,7 +193,6 @@
 </head>
 <body>
 
-  <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar">
     <div class="brand"><div class="brand-icon">+</div>SIGAP<span>FARMASI</span></div>
     <div>
@@ -219,7 +221,7 @@
     <div>
       <div class="menu-label">Lainnya</div>
       <nav><ul>
-        <li><a href="akun.html">
+        <li id="menuManajemenAkun"><a href="akun.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
           Manajemen Akun</a></li>
         <li><a href="laporan.html">
@@ -232,7 +234,6 @@
     </div>
   </aside>
 
-  <!-- ================= MAIN ================= -->
   <main class="main">
 
     <div class="topbar">
@@ -244,6 +245,9 @@
         <input type="text" placeholder="Cari data...">
       </div>
       <div class="avatar">AD</div>
+      <button class="logout-btn" onclick="logoutSistem()" title="Keluar dari sistem">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
     </div>
 
     <div class="page-header">
@@ -279,7 +283,6 @@
     </div>
   </main>
 
-  <!-- ========== MODAL PENGAJUAN KEBUTUHAN OBAT ========== -->
   <div class="modal-overlay" id="ajukanModal">
     <div class="modal-box">
       <button class="modal-close" onclick="tutupModalAjukan()">✕</button>
@@ -338,7 +341,6 @@
     </div>
   </div>
 
-  <!-- ========== MODAL PERBARUI PEMENUHAN ========== -->
   <div class="modal-overlay" id="pemenuhanModal">
     <div class="modal-box modal-kecil">
       <button class="modal-close" onclick="tutupModalPemenuhan()">✕</button>
@@ -369,21 +371,6 @@
   <div class="toast" id="toast"></div>
 
 <script>
-  // =========================================================
-  // KONEKSI SUPABASE (opsional).
-  // Kalau tabel "kebutuhan_obat" belum ada di Supabase, halaman ini
-  // tetap berjalan memakai DATA CONTOH (mode demo, tidak permanen).
-  // Dropdown Fasilitas & Obat diambil otomatis dari tabel
-  // "fasilitas" dan "obat" yang sudah ada di Supabase.
-  //
-  // LINK KE DISTRIBUSI OBAT: setiap kali data dimuat, halaman ini
-  // juga mengambil tabel "distribusi_obat" (hanya baris berstatus
-  // "Diterima") untuk dicocokkan dengan faskes_tujuan + nama obat
-  // yang sama. Total unit yang sudah diterima lewat jalur distribusi
-  // ditampilkan sebagai referensi di modal "Perbarui Pemenuhan" —
-  // tidak menimpa data secara otomatis/diam-diam, supaya pemenuhan
-  // dari sumber lain (di luar sistem distribusi ini) tidak tertimpa.
-  // =========================================================
   const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
 
@@ -397,16 +384,15 @@
   }
 
   let dataKebutuhan = [];
-  let dataDistribusiDiterima = []; // hanya baris distribusi_obat berstatus "Diterima"
+  let dataDistribusiDiterima = [];
   let modeDemo = true;
   let opsiObatHTML = '<option value="">Pilih Obat</option>';
   let idBarisObat = 0;
-  let idPemenuhanAktif = null; // id kebutuhan yang sedang dibuka di modal pemenuhan
+  let idPemenuhanAktif = null;
 
   const prioritasLabel = { tinggi:'Tinggi', sedang:'Sedang', rendah:'Rendah' };
   const statusLabel = { menunggu:'Menunggu', diproses:'Diproses', terpenuhi:'Terpenuhi' };
 
-  // ---------- Muat data kebutuhan + data distribusi (untuk link) ----------
   async function loadKebutuhan(){
     if(!db){ renderTabel(); return; }
     try{
@@ -423,8 +409,6 @@
         modeDemo = false;
       }
 
-      // Kegagalan memuat distribusi tidak menggagalkan halaman ini — cukup
-      // berarti kotak "link distribusi" tidak muncul di modal pemenuhan.
       dataDistribusiDiterima = (!hasilDistribusi.error && hasilDistribusi.data) ? hasilDistribusi.data : [];
     }catch(e){
       console.warn('Memakai data contoh (Supabase belum siap):', e);
@@ -432,7 +416,6 @@
     renderTabel();
   }
 
-  // Total unit yang sudah "Diterima" via Distribusi Obat, untuk faskes + obat tertentu
   function jumlahDiterimaViaDistribusi(faskesTujuan, obat){
     return dataDistribusiDiterima
       .filter(d => d.tujuan === faskesTujuan && d.obat === obat)
@@ -479,7 +462,6 @@
     });
   }
 
-  // ---------- Isi dropdown Fasilitas Kesehatan dari tabel "fasilitas" ----------
   async function muatDropdownFaskes(){
     const sel = document.getElementById('kFaskes');
     sel.innerHTML = '<option value="">Pilih Fasilitas Kesehatan</option>';
@@ -495,7 +477,6 @@
     }catch(e){ console.warn('Gagal memuat daftar fasilitas:', e); }
   }
 
-  // ---------- Siapkan opsi dropdown Obat dari tabel "obat" (dipakai berulang di tiap baris) ----------
   async function muatOpsiObat(){
     opsiObatHTML = '<option value="">Pilih Obat</option>';
     if(!db) return;
@@ -508,7 +489,6 @@
     }catch(e){ console.warn('Gagal memuat daftar obat:', e); }
   }
 
-  // ---------- Baris obat (bisa lebih dari satu) ----------
   function tambahBarisObat(){
     idBarisObat++;
     const rowId = 'baris-' + idBarisObat;
@@ -527,12 +507,11 @@
 
   function hapusBarisObat(rowId){
     const wrap = document.getElementById('daftarObatWrap');
-    if(wrap.children.length <= 1) return; // minimal harus ada 1 baris
+    if(wrap.children.length <= 1) return;
     document.getElementById(rowId)?.remove();
     perbaruiTombolHapusObat();
   }
 
-  // Nonaktifkan tombol hapus kalau cuma tersisa 1 baris, supaya form tidak kosong sama sekali
   function perbaruiTombolHapusObat(){
     const wrap = document.getElementById('daftarObatWrap');
     const tombolHapus = wrap.querySelectorAll('.obat-hapus');
@@ -545,7 +524,6 @@
     tambahBarisObat();
   }
 
-  // ---------- Buka / tutup modal pengajuan ----------
   async function bukaModalAjukan(){
     document.getElementById('kBencana').value = '';
     document.getElementById('kJenisBencana').value = '';
@@ -577,7 +555,6 @@
       return;
     }
 
-    // Kumpulkan semua baris obat yang terisi lengkap (obat dipilih + jumlah > 0)
     const barisObat = Array.from(document.querySelectorAll('#daftarObatWrap .obat-row'));
     const daftarItemObat = [];
     let adaBarisTidakLengkap = false;
@@ -588,7 +565,7 @@
       if(obat && jumlah > 0){
         daftarItemObat.push({ obat, jumlah_dibutuhkan: jumlah });
       } else if(obat || jumlah > 0){
-        adaBarisTidakLengkap = true; // salah satu diisi, satunya kosong
+        adaBarisTidakLengkap = true;
       }
     });
 
@@ -600,7 +577,6 @@
       tampilkanToast('Ada baris obat yang belum lengkap (obat atau jumlah kosong). Baris itu diabaikan.', true);
     }
 
-    // Setiap obat disimpan sebagai satu baris pengajuan, dengan info bencana yang sama
     const daftarPayload = daftarItemObat.map(item => ({
       bencana, jenis_bencana, faskes_tujuan, wilayah, prioritas,
       obat: item.obat, jumlah_dibutuhkan: item.jumlah_dibutuhkan, jumlah_terpenuhi:0,
@@ -623,7 +599,6 @@
     tampilkanToast('Kebutuhan "' + bencana + '" berhasil diajukan dengan ' + daftarPayload.length + ' jenis obat' + (modeDemo ? ' (mode demo, belum tersimpan permanen).' : '.'));
   }
 
-  // ---------- Buka / tutup modal Perbarui Pemenuhan (menggantikan prompt()) ----------
   function bukaModalPemenuhan(id){
     const item = dataKebutuhan.find(k => String(k.id) === String(id));
     if(!item) return;
@@ -686,7 +661,6 @@
     tampilkanToast('Pemenuhan "' + item.obat + '" untuk "' + item.bencana + '" diperbarui.');
   }
 
-  // ---------- Hapus ----------
   async function hapusKebutuhan(id){
     const item = dataKebutuhan.find(k => String(k.id) === String(id));
     if(!item) return;
@@ -713,7 +687,27 @@
     window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 5000);
   }
 
-  // ---------- Mulai ----------
+  function terapkanSesiUI(){
+    let sesi = null;
+    try{ sesi = JSON.parse(localStorage.getItem('sigapSesi') || 'null'); }catch(e){}
+    if(!sesi){ window.location.href = 'login.html'; return; }
+    const inisialSesi = (sesi.nama || '?').trim().split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    document.querySelectorAll('.avatar').forEach(el => { el.textContent = inisialSesi; });
+    if(sesi.peran !== 'Super Admin'){
+      const menuAkun = document.getElementById('menuManajemenAkun');
+      if(menuAkun) menuAkun.style.display = 'none';
+    }
+  }
+
+  function logoutSistem(){
+    const yakin = confirm('Yakin ingin keluar dari sistem?');
+    if(!yakin) return;
+    localStorage.removeItem('sigapSesi');
+    window.location.href = 'login.html';
+  }
+
+  terapkanSesiUI();
+
   loadKebutuhan();
 </script>
 </body>
