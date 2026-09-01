@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk – Sigap-Farmasi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<style>
+  :root{
+    --bg:#0b0f10;
+    --panel:#12181a;
+    --panel-2:#161d1f;
+    --border:#242c2e;
+    --brand:#e8a33d;
+    --brand-soft:#3a2e14;
+    --green:#1fae76;
+    --green-soft:#153627;
+    --red:#e5484d;
+    --red-soft:#3a1f21;
+    --text:#f2f4f3;
+    --text-dim:#93a1a0;
+    --text-faint:#5c6b6a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 600px at 15% 10%, rgba(232,163,61,.09), transparent 60%),
+      radial-gradient(ellipse 900px 600px at 85% 90%, rgba(31,174,118,.06), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  h1,h2,.brand{font-family:'Space Grotesk',sans-serif;}
+
+  .login-wrap{width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;}
+
+  .brand-badge{
+    width:56px;height:56px;border-radius:16px;background:var(--brand-soft);color:var(--brand);
+    display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;margin-bottom:18px;
+    border:1px solid rgba(232,163,61,.3);
+  }
+  .brand-title{display:flex;align-items:center;gap:2px;font-size:24px;font-weight:700;margin-bottom:6px;}
+  .brand-title span{color:var(--brand);}
+  .brand-sub{color:var(--text-dim);font-size:13px;text-align:center;margin-bottom:28px;line-height:1.5;}
+
+  .login-card{
+    width:100%;background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.35);
+  }
+  .card-head{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+  .card-head .ic{width:30px;height:30px;border-radius:8px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .card-head .ic svg{width:16px;height:16px;}
+  .card-head h2{font-size:16px;font-weight:700;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:7px;font-weight:500;}
+  .field-input{
+    display:flex;align-items:center;gap:9px;background:var(--panel-2);border:1px solid var(--border);
+    border-radius:9px;padding:11px 13px;transition:border-color .15s ease;
+  }
+  .field-input:focus-within{border-color:var(--brand);}
+  .field-input svg{width:16px;height:16px;color:var(--text-faint);flex-shrink:0;}
+  .field-input input{background:none;border:none;outline:none;color:var(--text);font-size:14px;width:100%;font-family:inherit;}
+  .field-input input::placeholder{color:var(--text-faint);}
+
+  .btn-masuk{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--brand);color:#241a06;border:none;padding:12px 16px;border-radius:9px;
+    font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;transition:opacity .15s ease;
+  }
+  .btn-masuk:hover{opacity:.9;}
+  .btn-masuk:disabled{opacity:.6;cursor:not-allowed;}
+
+  .pesan-error{
+    display:none;align-items:center;gap:8px;background:var(--red-soft);color:var(--red);
+    border:1px solid rgba(229,72,77,.3);border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:16px;
+  }
+  .pesan-error.show{display:flex;}
+  .pesan-error svg{width:15px;height:15px;flex-shrink:0;}
+
+  .footer-note{color:var(--text-faint);font-size:11.5px;text-align:center;margin-top:22px;}
+</style>
+</head>
+<body>
+
+  <div class="login-wrap">
+    <div class="brand-badge">+</div>
+    <div class="brand-title">SIGAP<span>&nbsp;FARMASI</span></div>
+    <div class="brand-sub">Sistem Pelayanan Kefarmasian Bencana</div>
+
+    <div class="login-card">
+      <div class="card-head">
+        <div class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 6v6c0 5.5 3.8 9.7 9 11 5.2-1.3 9-5.5 9-11V6z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h2>Masuk ke Sistem</h2>
+      </div>
+
+      <div class="pesan-error" id="pesanError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span id="teksError">Email atau kata sandi salah.</span>
+      </div>
+
+      <form id="formLogin" onsubmit="return prosesLogin(event)">
+        <div class="field">
+          <label>Alamat Email</label>
+          <div class="field-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
+            <input type="email" id="lEmail" placeholder="name@example.com" autocomplete="username" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Kata Sandi</label>
+          <div class="field-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="lPassword" placeholder="Masukkan kata sandi" autocomplete="current-password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-masuk" id="btnMasuk">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+          <span id="teksBtnMasuk">Masuk ke Sistem</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="footer-note">© 2026 Sigap-Farmasi. Akses hanya untuk pengguna terdaftar.</div>
+  </div>
+
+<script>
+  // =========================================================
+  // KONEKSI SUPABASE — memakai tabel "pengguna" yang sama dengan
+  // akun.html & pengaturan.html. Verifikasi password memakai
+  // bcryptjs, dicocokkan terhadap kolom "password" (hash) di tabel
+  // "pengguna" — persis seperti mekanisme ubahPassword() di
+  // pengaturan.html.
+  //
+  // Setelah login berhasil, data sesi (id, nama, email, peran)
+  // disimpan ke localStorage dengan key "sigapSesi", dan kolom
+  // "login_terakhir" di tabel "pengguna" diperbarui.
+  //
+  // CATATAN: ini bukan autentikasi tingkat produksi (verifikasi
+  // password terjadi di browser, bukan di server). Cocok untuk
+  // demo/internal, tapi kalau butuh keamanan lebih serius nanti,
+  // pertimbangkan pindah ke Supabase Auth.
+  // =========================================================
+  const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
+
+  let db;
+  try {
+    if (window.supabase) {
+      db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch (e) {
+    console.error('Gagal membuat koneksi Supabase:', e);
+  }
+
+  function tampilkanError(pesan){
+    document.getElementById('teksError').textContent = pesan;
+    document.getElementById('pesanError').classList.add('show');
+  }
+  function sembunyikanError(){
+    document.getElementById('pesanError').classList.remove('show');
+  }
+
+  function setLoading(loading){
+    const btn = document.getElementById('btnMasuk');
+    const teks = document.getElementById('teksBtnMasuk');
+    btn.disabled = loading;
+    teks.textContent = loading ? 'Memeriksa...' : 'Masuk ke Sistem';
+  }
+
+  async function prosesLogin(ev){
+    ev.preventDefault();
+    sembunyikanError();
+
+    const email = document.getElementById('lEmail').value.trim().toLowerCase();
+    const password = document.getElementById('lPassword').value;
+
+    if(!email || !password){
+      tampilkanError('Email dan kata sandi wajib diisi.');
+      return false;
+    }
+
+    if(!db){
+      tampilkanError('Tidak bisa terhubung ke server. Cek koneksi internet lalu coba lagi.');
+      return false;
+    }
+
+    setLoading(true);
+    try{
+      const { data, error } = await db.from('pengguna').select('*').ilike('email', email).limit(1);
+
+      if(error){
+        console.error(error);
+        tampilkanError('Terjadi kesalahan saat memeriksa akun. Coba lagi sebentar lagi.');
+        setLoading(false);
+        return false;
+      }
+
+      if(!data || data.length === 0){
+        tampilkanError('Email atau kata sandi salah.');
+        setLoading(false);
+        return false;
+      }
+
+      const user = data[0];
+
+      if(!user.password){
+        tampilkanError('Akun ini belum memiliki kata sandi. Hubungi Super Admin.');
+        setLoading(false);
+        return false;
+      }
+
+      let cocok = false;
+      try{
+        cocok = dcodeIO.bcrypt.compareSync(password, user.password);
+      }catch(e){
+        console.error('Gagal memverifikasi password:', e);
+      }
+
+      if(!cocok){
+        tampilkanError('Email atau kata sandi salah.');
+        setLoading(false);
+        return false;
+      }
+
+      // Login berhasil — simpan sesi
+      const sesi = {
+        id: user.id,
+        nama: user.nama,
+        email: user.email,
+        peran: user.peran,
+        waktu_login: new Date().toISOString()
+      };
+      localStorage.setItem('sigapSesi', JSON.stringify(sesi));
+
+      // Perbarui login_terakhir di database (kalau gagal, tidak menghalangi login)
+      try{
+        await db.from('pengguna').update({ login_terakhir: new Date().toISOString() }).eq('id', user.id);
+      }catch(e){
+        console.warn('Gagal memperbarui login_terakhir:', e);
+      }
+
+      window.location.href = 'index.html';
+    }catch(e){
+      console.error(e);
+      tampilkanError('Terjadi kesalahan tak terduga. Coba lagi.');
+      setLoading(false);
+    }
+
+    return false;
+  }
+</script>
+</body>
+</html>
