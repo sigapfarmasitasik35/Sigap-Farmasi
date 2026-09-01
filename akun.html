@@ -3,6 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){
+    try{
+      const sesiRaw = localStorage.getItem('sigapSesi');
+      if(!sesiRaw){ window.location.href = 'login.html'; return; }
+      const sesi = JSON.parse(sesiRaw);
+      if(sesi.peran !== 'Super Admin'){ window.location.href = 'index.html'; }
+    }catch(e){ window.location.href = 'login.html'; }
+  })();
+</script>
 <title>Sigap-Farmasi – Manajemen Akun</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -72,6 +82,8 @@
     width:34px;height:34px;border-radius:9px;background:var(--brand);color:#241a06;font-weight:700;
     font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;
   }
+  .logout-btn{width:34px;height:34px;border-radius:9px;background:var(--panel-2);border:1px solid var(--border);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-left:8px;}
+  .logout-btn:hover{color:var(--red);border-color:var(--red);}
 
   .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:14px;flex-shrink:0;}
   .page-header h1{font-size:20px;font-weight:700;margin-bottom:3px;}
@@ -210,6 +222,9 @@
         <input type="text" placeholder="Cari data...">
       </div>
       <div class="avatar">AD</div>
+      <button class="logout-btn" onclick="logoutSistem()" title="Keluar dari sistem">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
     </div>
 
     <div class="page-header">
@@ -277,7 +292,6 @@
   <div class="toast" id="toast"></div>
 
 <script>
-  // Sambungkan ke Supabase — samakan dengan URL/KEY yang sudah dipakai di data-obat.html
   const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
 
@@ -480,6 +494,29 @@
     clearTimeout(window._toastTimer);
     window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 6000);
   }
+
+  function terapkanSesiUI(){
+    let sesi = null;
+    try{ sesi = JSON.parse(localStorage.getItem('sigapSesi') || 'null'); }catch(e){}
+    if(!sesi){ window.location.href = 'login.html'; return; }
+    const inisialSesi = (sesi.nama || '?').trim().split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    document.querySelectorAll('.avatar').forEach(el => { el.textContent = inisialSesi; });
+    // Catatan: proteksi utama untuk peran non-Super Admin sudah dilakukan
+    // di script paling awal <head> (redirect ke index.html), jadi baris
+    // di bawah ini murni jaga-jaga tambahan saja.
+    if(sesi.peran !== 'Super Admin'){
+      window.location.href = 'index.html';
+    }
+  }
+
+  function logoutSistem(){
+    const yakin = confirm('Yakin ingin keluar dari sistem?');
+    if(!yakin) return;
+    localStorage.removeItem('sigapSesi');
+    window.location.href = 'login.html';
+  }
+
+  terapkanSesiUI();
 
   loadPengguna();
 </script>
