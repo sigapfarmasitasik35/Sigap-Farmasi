@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){
+    try{
+      if(!localStorage.getItem('sigapSesi')){ window.location.href = 'login.html'; }
+    }catch(e){ window.location.href = 'login.html'; }
+  })();
+</script>
 <title>Sigap-Farmasi – Fasilitas Kesehatan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -39,7 +46,6 @@
   }
   h1,h2,.brand{font-family:'Space Grotesk',sans-serif;}
 
-  /* ---------- Sidebar (sama seperti halaman lain) ---------- */
   .sidebar{
     width:240px;flex-shrink:0;background:var(--panel);
     border-right:1px solid var(--border);padding:16px 12px;
@@ -56,7 +62,6 @@
   nav a.active{background:var(--brand-soft);color:var(--brand);}
   nav a svg{width:16px;height:16px;flex-shrink:0;}
 
-  /* ---------- Main ---------- */
   .main{
     flex:1;padding:14px 22px;min-width:0;
     height:100vh; display:flex; flex-direction:column; overflow:hidden;
@@ -77,6 +82,8 @@
     width:34px;height:34px;border-radius:9px;background:var(--brand);color:#241a06;font-weight:700;
     font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;
   }
+  .logout-btn{width:34px;height:34px;border-radius:9px;background:var(--panel-2);border:1px solid var(--border);color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-left:8px;}
+  .logout-btn:hover{color:var(--red);border-color:var(--red);}
 
   .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:14px;flex-shrink:0;}
   .page-header h1{font-size:20px;font-weight:700;margin-bottom:3px;}
@@ -87,7 +94,6 @@
   .btn-secondary{display:flex;align-items:center;gap:8px;background:var(--panel-2);color:var(--text);border:1px solid var(--border);padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;}
   .btn-secondary:hover{border-color:var(--text-faint);}
 
-  /* ---------- Konten: peta + daftar, scroll internal saja ---------- */
   .content{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:14px;}
 
   .map-panel{
@@ -106,7 +112,6 @@
   .leaflet-popup-content b{color:var(--brand);}
   .leaflet-container a.leaflet-popup-close-button{color:var(--text-dim);}
 
-  /* ---------- Tabel daftar fasilitas ---------- */
   .table-wrap{
     background:var(--panel);border:1px solid var(--border);border-radius:12px;
     overflow:auto; flex-shrink:0;
@@ -132,9 +137,6 @@
   .aksi button:hover{color:var(--text);border-color:var(--text-faint);}
   .aksi button.del:hover{color:var(--red);border-color:var(--red);}
 
-  /* ---------- Modal tambah ---------- */
-  /* z-index dinaikkan jadi 9999 supaya SELALU di atas peta Leaflet
-     (pane internal Leaflet punya z-index sampai 700, jadi harus dikalahkan) */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;}
   .modal-overlay.show{display:flex;}
   .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:440px;padding:24px;max-height:90vh;overflow-y:auto;}
@@ -148,11 +150,10 @@
   .field-hint.auto-ok{color:var(--green);}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
 
-  /* input number lat/long -> tampilkan spinner naik/turun (browser default) */
   .field input[type="number"]{-moz-appearance:textfield;}
   .field input[type="number"]::-webkit-inner-spin-button,
   .field input[type="number"]::-webkit-outer-spin-button{
-    opacity:1; /* pastikan panah spinner tetap terlihat di tema gelap */
+    opacity:1;
   }
 
   .toast{position:fixed;bottom:24px;right:24px;background:var(--brand);color:#241a06;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:10000;max-width:360px;}
@@ -168,7 +169,6 @@
 </head>
 <body>
 
-  <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar">
     <div class="brand"><div class="brand-icon">+</div>SIGAP<span>FARMASI</span></div>
     <div>
@@ -197,7 +197,7 @@
     <div>
       <div class="menu-label">Lainnya</div>
       <nav><ul>
-        <li><a href="akun.html">
+        <li id="menuManajemenAkun"><a href="akun.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
           Manajemen Akun</a></li>
         <li><a href="laporan.html">
@@ -210,7 +210,6 @@
     </div>
   </aside>
 
-  <!-- ================= MAIN ================= -->
   <main class="main">
 
     <div class="topbar">
@@ -222,6 +221,9 @@
         <input type="text" placeholder="Cari data...">
       </div>
       <div class="avatar">AD</div>
+      <button class="logout-btn" onclick="logoutSistem()" title="Keluar dari sistem">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
     </div>
 
     <div class="page-header">
@@ -255,7 +257,6 @@
     </div>
   </main>
 
-  <!-- ========== MODAL TAMBAH ========== -->
   <div class="modal-overlay" id="tambahModal">
     <div class="modal-box">
       <h3>Tambah Fasilitas Baru</h3>
@@ -291,13 +292,6 @@
   <div class="toast" id="toast"></div>
 
 <script>
-  // =========================================================
-  // KONEKSI SUPABASE (opsional).
-  // Kalau tabel "fasilitas" belum ada di Supabase kamu, halaman ini
-  // tetap berjalan memakai DATA CONTOH di bawah (mode demo).
-  // Variabel klien diberi nama "db" (bukan "supabase") supaya tidak
-  // bentrok dengan variabel global dari library CDN.
-  // =========================================================
   const SUPABASE_URL = 'https://liaqekfxhbzewgctvach.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
 
@@ -310,7 +304,6 @@
     console.error('Gagal membuat koneksi Supabase:', e);
   }
 
-  // ---------- Data contoh (dipakai kalau tabel "fasilitas" belum ada) ----------
   let dataFasilitas = [
     { id:'demo-1', nama:'Puskesmas Jakarta Pusat', tipe:'puskesmas', wilayah:'Jakarta', kabkota:'Jakarta Pusat', provinsi:'DKI Jakarta', kontak:'021-xxxxxxx', lat:-6.1944, lng:106.8229 },
     { id:'demo-2', nama:'RSUD Surabaya', tipe:'rumahsakit', wilayah:'Surabaya', kabkota:'Surabaya', provinsi:'Jawa Timur', kontak:'031-xxxxxxx', lat:-7.2575, lng:112.7521 },
@@ -320,15 +313,7 @@
 
   const tipeLabel = { puskesmas:'Puskesmas', rumahsakit:'Rumah Sakit', posko:'Posko Darurat' };
 
-  // =========================================================
-  // DATASET KOORDINAT KABUPATEN/KOTA (perkiraan titik pusat kota).
-  // Dipakai untuk isi otomatis Latitude/Longitude & Provinsi saat
-  // pengguna mengetik nama Kabupaten/Kota. Belum mencakup seluruh
-  // 514 kabupaten/kota di Indonesia — kalau tidak ditemukan,
-  // pengguna tetap bisa isi manual (lihat hint di bawah field).
-  // =========================================================
   const koordinatKabKota = {
-    // Ibu kota provinsi
     'banda aceh': { lat:5.5483, lng:95.3238, provinsi:'Aceh' },
     'medan': { lat:3.5952, lng:98.6722, provinsi:'Sumatera Utara' },
     'padang': { lat:-0.9471, lng:100.4172, provinsi:'Sumatera Barat' },
@@ -369,8 +354,6 @@
     'sofifi': { lat:0.7373, lng:127.4874, provinsi:'Maluku Utara' },
     'jayapura': { lat:-2.5337, lng:140.7181, provinsi:'Papua' },
     'manokwari': { lat:-0.8615, lng:134.0621, provinsi:'Papua Barat' },
-
-    // Jawa Barat
     'bogor': { lat:-6.5944, lng:106.7891, provinsi:'Jawa Barat' },
     'kota bogor': { lat:-6.5971, lng:106.8060, provinsi:'Jawa Barat' },
     'bekasi': { lat:-6.2383, lng:107.0000, provinsi:'Jawa Barat' },
@@ -392,14 +375,10 @@
     'bandung barat': { lat:-6.8354, lng:107.4877, provinsi:'Jawa Barat' },
     'cimahi': { lat:-6.8841, lng:107.5413, provinsi:'Jawa Barat' },
     'pangandaran': { lat:-7.6832, lng:108.6503, provinsi:'Jawa Barat' },
-
-    // DI Yogyakarta
     'bantul': { lat:-7.8827, lng:110.3287, provinsi:'DI Yogyakarta' },
     'sleman': { lat:-7.7167, lng:110.3569, provinsi:'DI Yogyakarta' },
     'kulon progo': { lat:-7.8256, lng:110.1642, provinsi:'DI Yogyakarta' },
     'gunung kidul': { lat:-7.9825, lng:110.6173, provinsi:'DI Yogyakarta' },
-
-    // Jawa Tengah
     'surakarta': { lat:-7.5755, lng:110.8243, provinsi:'Jawa Tengah' },
     'solo': { lat:-7.5755, lng:110.8243, provinsi:'Jawa Tengah' },
     'magelang': { lat:-7.4797, lng:110.2177, provinsi:'Jawa Tengah' },
@@ -414,8 +393,6 @@
     'boyolali': { lat:-7.5300, lng:110.5947, provinsi:'Jawa Tengah' },
     'sragen': { lat:-7.4262, lng:111.0225, provinsi:'Jawa Tengah' },
     'salatiga': { lat:-7.3305, lng:110.5084, provinsi:'Jawa Tengah' },
-
-    // Jawa Timur
     'malang': { lat:-7.9666, lng:112.6326, provinsi:'Jawa Timur' },
     'kediri': { lat:-7.8480, lng:112.0178, provinsi:'Jawa Timur' },
     'blitar': { lat:-8.0954, lng:112.1609, provinsi:'Jawa Timur' },
@@ -430,22 +407,16 @@
     'lumajang': { lat:-8.1339, lng:113.2245, provinsi:'Jawa Timur' },
     'bojonegoro': { lat:-7.1500, lng:111.8817, provinsi:'Jawa Timur' },
     'tuban': { lat:-6.8973, lng:112.0654, provinsi:'Jawa Timur' },
-
-    // Banten
     'tangerang': { lat:-6.1783, lng:106.6319, provinsi:'Banten' },
     'tangerang selatan': { lat:-6.2888, lng:106.7183, provinsi:'Banten' },
     'cilegon': { lat:-6.0025, lng:106.0111, provinsi:'Banten' },
     'lebak': { lat:-6.5588, lng:106.2530, provinsi:'Banten' },
     'pandeglang': { lat:-6.3006, lng:106.1005, provinsi:'Banten' },
-
-    // Bali & Nusa Tenggara
     'badung': { lat:-8.5900, lng:115.1780, provinsi:'Bali' },
     'gianyar': { lat:-8.5333, lng:115.3286, provinsi:'Bali' },
     'buleleng': { lat:-8.1120, lng:115.0882, provinsi:'Bali' },
     'tabanan': { lat:-8.5417, lng:115.1256, provinsi:'Bali' },
     'karangasem': { lat:-8.4535, lng:115.6081, provinsi:'Bali' },
-
-    // Sumatera lainnya
     'deli serdang': { lat:3.5297, lng:98.7861, provinsi:'Sumatera Utara' },
     'binjai': { lat:3.6001, lng:98.4854, provinsi:'Sumatera Utara' },
     'pematang siantar': { lat:2.9595, lng:99.0687, provinsi:'Sumatera Utara' },
@@ -454,22 +425,17 @@
     'dumai': { lat:1.6667, lng:101.4500, provinsi:'Riau' },
     'lubuklinggau': { lat:-3.2967, lng:102.8608, provinsi:'Sumatera Selatan' },
     'metro': { lat:-5.1131, lng:105.3067, provinsi:'Lampung' },
-
-    // Kalimantan & Sulawesi lainnya
     'balikpapan': { lat:-1.2379, lng:116.8529, provinsi:'Kalimantan Timur' },
     'bontang': { lat:0.1324, lng:117.4855, provinsi:'Kalimantan Timur' },
     'singkawang': { lat:0.9021, lng:108.9814, provinsi:'Kalimantan Barat' },
     'bitung': { lat:1.4451, lng:125.1815, provinsi:'Sulawesi Utara' },
     'parepare': { lat:-4.0135, lng:119.6255, provinsi:'Sulawesi Selatan' },
     'bau bau': { lat:-5.4740, lng:122.6170, provinsi:'Sulawesi Tenggara' },
-
-    // Papua & Maluku
     'sorong': { lat:-0.8762, lng:131.2558, provinsi:'Papua Barat' },
     'ternate': { lat:0.7833, lng:127.3667, provinsi:'Maluku Utara' },
     'merauke': { lat:-8.4667, lng:140.3333, provinsi:'Papua Selatan' }
   };
 
-  // Bersihkan awalan "kabupaten"/"kota"/"kab." dari teks input sebelum dicocokkan
   function normalisasiNamaWilayah(teks){
     return teks
       .toLowerCase()
@@ -491,9 +457,7 @@
       return;
     }
 
-    // 1) coba cocok persis
     let hasil = koordinatKabKota[teks];
-    // 2) kalau belum ketemu, coba cocok sebagian (mis. "tasikmalaya kota" atau salah ketik ringan)
     if(!hasil){
       const kunciCocok = Object.keys(koordinatKabKota).find(k => teks.includes(k) || k.includes(teks));
       if(kunciCocok) hasil = koordinatKabKota[kunciCocok];
@@ -512,15 +476,9 @@
     }
   }
 
-  // ---------- Peta ----------
   let peta, markerLayer;
   function initPeta(){
-    // scrollWheelZoom diaktifkan supaya peta bisa diperbesar/perkecil
-    // cukup dengan menggulirkan mouse (sebelumnya false / harus klik dulu)
     peta = L.map('peta', { scrollWheelZoom:true }).setView([-2.5, 118], 4.3);
-    // Tile OpenStreetMap standar: gratis, tanpa perlu API key (sebelumnya CARTO
-    // yang sekarang mewajibkan API key untuk akses gratisnya, sehingga muncul
-    // tulisan "api key required" di atas peta). Disamakan dengan index.html.
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19
@@ -537,13 +495,11 @@
     });
   }
 
-  // ---------- Muat data ----------
   async function loadFasilitas(){
     if(!db){ renderTabel(); renderMarker(); return; }
     try{
       const { data, error } = await db.from('fasilitas').select('*').order('nama', { ascending:true });
       if(error){
-        // Tabel belum ada / RLS menolak → tetap pakai data contoh, jangan bikin halaman gagal total
         console.warn('Memakai data contoh (Supabase belum siap):', error.message);
         modeDemo = true;
       } else if (data){
@@ -586,7 +542,6 @@
     peta.flyTo([lat, lng], 9, { duration: 0.8 });
   }
 
-  // ---------- Tambah ----------
   function tambahFasilitas(){
     document.getElementById('fNama').value = '';
     document.getElementById('fTipe').value = 'puskesmas';
@@ -664,7 +619,27 @@
     window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 5000);
   }
 
-  // ---------- Mulai ----------
+  function terapkanSesiUI(){
+    let sesi = null;
+    try{ sesi = JSON.parse(localStorage.getItem('sigapSesi') || 'null'); }catch(e){}
+    if(!sesi){ window.location.href = 'login.html'; return; }
+    const inisialSesi = (sesi.nama || '?').trim().split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    document.querySelectorAll('.avatar').forEach(el => { el.textContent = inisialSesi; });
+    if(sesi.peran !== 'Super Admin'){
+      const menuAkun = document.getElementById('menuManajemenAkun');
+      if(menuAkun) menuAkun.style.display = 'none';
+    }
+  }
+
+  function logoutSistem(){
+    const yakin = confirm('Yakin ingin keluar dari sistem?');
+    if(!yakin) return;
+    localStorage.removeItem('sigapSesi');
+    window.location.href = 'login.html';
+  }
+
+  terapkanSesiUI();
+
   initPeta();
   loadFasilitas();
 </script>
