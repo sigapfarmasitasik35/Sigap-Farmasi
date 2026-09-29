@@ -196,6 +196,16 @@
   .b-dstatus-diterima{background:var(--green-soft);color:var(--green);}
   .b-dstatus-dibatalkan{background:var(--red-soft);color:var(--red);}
 
+  /* ---------- Ringkasan Obat Segera Kedaluwarsa ---------- */
+  .exp-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .exp-row:last-child{border-bottom:none;padding-bottom:0;}
+  .exp-row:first-child{padding-top:0;}
+  .exp-main{font-size:13px;font-weight:600;}
+  .exp-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+  .exp-right{text-align:right;flex-shrink:0;}
+  .exp-days{font-family:'IBM Plex Mono', monospace;font-weight:700;font-size:12.5px;}
+  .exp-date{font-size:10.5px;color:var(--text-faint);margin-top:2px;}
+
     nav a.logout-link:hover{background:var(--red-soft);color:var(--red);}
 
   @media (max-width:900px){
@@ -317,6 +327,17 @@
         <div class="stat-value" id="statDistribusi">–</div>
         <div class="stat-foot"><span class="pill green" id="statDistribusiBadge">-</span><span class="note" id="statDistribusiNote">Memuat data...</span></div>
       </div>
+    </div>
+
+    <div class="section-row">
+      <h2>Peringatan Kedaluwarsa</h2>
+    </div>
+
+    <div class="panel" style="margin-bottom:14px;">
+      <h3>Obat Segera Kedaluwarsa (≤ 90 hari)
+        <span class="badge" id="badgeExp" style="background:var(--red-soft);color:var(--red);">0 obat</span>
+      </h3>
+      <div id="listObatKedaluwarsa"><div class="empty-msg">Memuat data...</div></div>
     </div>
 
     <div class="section-row">
@@ -454,6 +475,7 @@
     ]);
 
     renderStatistikUtama();
+    renderObatKedaluwarsa();
     renderPeta();
     renderChartWilayah();
     renderTrenGabungan();
@@ -503,6 +525,62 @@
     }
     document.getElementById('statDistribusiBadge').textContent = badgeTxt;
     document.getElementById('statDistribusiNote').textContent = noteTxt;
+  }
+
+  // ---------- Ringkasan Obat Segera Kedaluwarsa ----------
+  // Kolom "kedaluwarsa" di tabel "obat" formatnya dd/mm/yyyy (string), sama seperti di data-obat.html
+  function parseKedaluwarsa(tgl){
+    if(!tgl || tgl === '-') return null;
+    const parts = tgl.split('/');
+    if(parts.length !== 3) return null;
+    const [d, m, y] = parts.map(Number);
+    if(!d || !m || !y) return null;
+    return new Date(y, m - 1, d);
+  }
+
+  function renderObatKedaluwarsa(){
+    const wrap = document.getElementById('listObatKedaluwarsa');
+    const badge = document.getElementById('badgeExp');
+    const now = new Date();
+
+    if(dataObat.length === 0){
+      wrap.innerHTML = '<div class="empty-msg">' + catatanKosong('obat', 'Belum ada data obat.') + '</div>';
+      badge.textContent = '0 obat';
+      return;
+    }
+
+    const daftar = dataObat.map(item => {
+      const tgl = parseKedaluwarsa(item.kedaluwarsa);
+      if(!tgl) return null;
+      const sisaHari = Math.round((tgl - now) / (1000*60*60*24));
+      return { ...item, sisaHari };
+    }).filter(it => it && it.sisaHari <= 90)
+      .sort((a,b) => a.sisaHari - b.sisaHari);
+
+    badge.textContent = daftar.length + ' obat';
+
+    if(daftar.length === 0){
+      wrap.innerHTML = '<div class="empty-msg">Tidak ada obat yang mendekati atau melewati kedaluwarsa dalam 90 hari ke depan.</div>';
+      return;
+    }
+
+    wrap.innerHTML = daftar.slice(0, 8).map(it => {
+      const lewat = it.sisaHari < 0;
+      const merah = lewat || it.sisaHari <= 30;
+      const warna = merah ? 'var(--red)' : 'var(--orange)';
+      const label = lewat ? 'Kedaluwarsa ' + fmt(Math.abs(it.sisaHari)) + ' hari lalu' : fmt(it.sisaHari) + ' hari lagi';
+      return `
+        <div class="exp-row" onclick="location.href='data-obat.html'" style="cursor:pointer;">
+          <div>
+            <div class="exp-main">${it.nama || '-'}</div>
+            <div class="exp-sub">${it.kode || '-'} • ${it.lokasi || '-'}</div>
+          </div>
+          <div class="exp-right">
+            <div class="exp-days" style="color:${warna};">${label}</div>
+            <div class="exp-date">${it.kedaluwarsa}</div>
+          </div>
+        </div>`;
+    }).join('');
   }
 
   // ---------- Peta Ketersediaan Faskes ----------
