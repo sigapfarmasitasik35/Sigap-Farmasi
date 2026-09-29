@@ -197,6 +197,24 @@
   .b-dstatus-dibatalkan{background:var(--red-soft);color:var(--red);}
 
   /* ---------- Ringkasan Obat Segera Kedaluwarsa ---------- */
+  .exp-summary{
+    background:linear-gradient(160deg, var(--red-soft), var(--panel) 65%);border:1px solid rgba(229,72,77,.28);
+    border-radius:12px;padding:18px;cursor:pointer;transition:transform .15s ease, border-color .15s ease;
+    display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .exp-summary:hover{transform:translateY(-2px);border-color:var(--text-faint);}
+  .exp-summary-left{display:flex;align-items:center;gap:14px;}
+  .exp-summary-icon{width:42px;height:42px;border-radius:10px;background:rgba(229,72,77,.18);color:var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .exp-summary-icon svg{width:20px;height:20px;}
+  .exp-summary-label{font-size:13px;color:var(--text-dim);}
+  .exp-summary-value{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;margin-top:2px;}
+  .exp-summary-note{font-size:11.5px;color:var(--text-faint);margin-top:2px;}
+  .exp-summary-toggle{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--red);flex-shrink:0;}
+  .exp-summary-toggle svg{width:15px;height:15px;transition:transform .2s ease;}
+  .exp-summary.open .exp-summary-toggle svg{transform:rotate(180deg);}
+
+  .exp-detail{display:none;margin-top:12px;}
+  .exp-detail.open{display:block;}
   .exp-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
   .exp-row:last-child{border-bottom:none;padding-bottom:0;}
   .exp-row:first-child{padding-top:0;}
@@ -333,11 +351,24 @@
       <h2>Peringatan Kedaluwarsa</h2>
     </div>
 
-    <div class="panel" style="margin-bottom:14px;">
-      <h3>Obat Segera Kedaluwarsa (≤ 90 hari)
-        <span class="badge" id="badgeExp" style="background:var(--red-soft);color:var(--red);">0 obat</span>
-      </h3>
-      <div id="listObatKedaluwarsa"><div class="empty-msg">Memuat data...</div></div>
+    <div style="margin-bottom:14px;">
+      <div class="exp-summary" id="expSummary" onclick="toggleExpDetail()">
+        <div class="exp-summary-left">
+          <div class="exp-summary-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M12 14v4M12 22h.01"/></svg></div>
+          <div>
+            <div class="exp-summary-label">Obat Segera Kedaluwarsa</div>
+            <div class="exp-summary-value" id="expSummaryValue">–</div>
+            <div class="exp-summary-note" id="expSummaryNote">Memuat data...</div>
+          </div>
+        </div>
+        <div class="exp-summary-toggle" id="expSummaryToggle">
+          Lihat detail
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div class="panel exp-detail" id="expDetail" style="margin-top:10px;">
+        <div id="listObatKedaluwarsa"><div class="empty-msg">Memuat data...</div></div>
+      </div>
     </div>
 
     <div class="section-row">
@@ -538,18 +569,32 @@
     return new Date(y, m - 1, d);
   }
 
+  let daftarObatKedaluwarsa = [];
+
+  function toggleExpDetail(){
+    const summary = document.getElementById('expSummary');
+    const detail = document.getElementById('expDetail');
+    const toggleLbl = document.getElementById('expSummaryToggle');
+    const buka = !detail.classList.contains('open');
+    detail.classList.toggle('open', buka);
+    summary.classList.toggle('open', buka);
+    toggleLbl.childNodes[0].textContent = buka ? 'Sembunyikan ' : 'Lihat detail ';
+  }
+
   function renderObatKedaluwarsa(){
+    const valueEl = document.getElementById('expSummaryValue');
+    const noteEl = document.getElementById('expSummaryNote');
     const wrap = document.getElementById('listObatKedaluwarsa');
-    const badge = document.getElementById('badgeExp');
     const now = new Date();
 
     if(dataObat.length === 0){
+      valueEl.textContent = '0';
+      noteEl.textContent = catatanKosong('obat', 'Belum ada data obat.');
       wrap.innerHTML = '<div class="empty-msg">' + catatanKosong('obat', 'Belum ada data obat.') + '</div>';
-      badge.textContent = '0 obat';
       return;
     }
 
-    const daftar = dataObat.map(item => {
+    daftarObatKedaluwarsa = dataObat.map(item => {
       const tgl = parseKedaluwarsa(item.kedaluwarsa);
       if(!tgl) return null;
       const sisaHari = Math.round((tgl - now) / (1000*60*60*24));
@@ -557,20 +602,25 @@
     }).filter(it => it && it.sisaHari <= 90)
       .sort((a,b) => a.sisaHari - b.sisaHari);
 
-    badge.textContent = daftar.length + ' obat';
+    const jmlLewat = daftarObatKedaluwarsa.filter(it => it.sisaHari < 0).length;
 
-    if(daftar.length === 0){
+    valueEl.textContent = fmt(daftarObatKedaluwarsa.length);
+    if(daftarObatKedaluwarsa.length === 0){
+      noteEl.textContent = 'Tidak ada obat yang mendekati kedaluwarsa dalam 90 hari ke depan';
       wrap.innerHTML = '<div class="empty-msg">Tidak ada obat yang mendekati atau melewati kedaluwarsa dalam 90 hari ke depan.</div>';
       return;
     }
+    noteEl.textContent = jmlLewat > 0
+      ? jmlLewat + ' sudah lewat kedaluwarsa — klik untuk lihat detail'
+      : 'Dalam 90 hari ke depan — klik untuk lihat detail';
 
-    wrap.innerHTML = daftar.slice(0, 8).map(it => {
+    wrap.innerHTML = daftarObatKedaluwarsa.slice(0, 8).map(it => {
       const lewat = it.sisaHari < 0;
       const merah = lewat || it.sisaHari <= 30;
       const warna = merah ? 'var(--red)' : 'var(--orange)';
       const label = lewat ? 'Kedaluwarsa ' + fmt(Math.abs(it.sisaHari)) + ' hari lalu' : fmt(it.sisaHari) + ' hari lagi';
       return `
-        <div class="exp-row" onclick="location.href='data-obat.html'" style="cursor:pointer;">
+        <div class="exp-row" onclick="event.stopPropagation(); location.href='data-obat.html'" style="cursor:pointer;">
           <div>
             <div class="exp-main">${it.nama || '-'}</div>
             <div class="exp-sub">${it.kode || '-'} • ${it.lokasi || '-'}</div>
