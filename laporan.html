@@ -10,7 +10,7 @@
     }catch(e){ window.location.href = 'login.html'; }
   })();
 </script>
-<title>Sigap-Farmasi – Laporan & Rekapitulasi</title>
+<title>Sigab-Farma – Laporan & Rekapitulasi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -440,7 +440,7 @@
     const doc = new jsPDF();
 
     doc.setFontSize(14);
-    doc.text(`Laporan ${cfg.judul} — Sigap-Farmasi`, 14, 16);
+    doc.text(`Laporan ${cfg.judul} — Sigab-Farma`, 14, 16);
     doc.setFontSize(9);
     doc.text(`Diunduh: ${new Date().toLocaleString('id-ID')}`, 14, 22);
 
