@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<script>try{if(!localStorage.getItem('sigapSesi'))location.href='login.html'}catch(e){location.href='login.html'}</script>
+<title>Sigab-Farma – Perbekes</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sigab-ui.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="akses.js"></script>
+</head><body>
+<aside class="sb" id="sb"></aside>
+<main class="main">
+  <div class="ph"><div><h1>Perbekes</h1><p>Perbekalan kesehatan: obat, alat kesehatan, bahan medis habis pakai, dan lainnya</p></div>
+  <button class="btn" onclick="buka()">+ Tambah Perbekes</button></div>
+  <div class="bar"><input id="cari" placeholder="Cari nama atau kode..." oninput="tampil()">
+  <select id="fj" onchange="tampil()"><option value="">Semua jenis</option><option>Obat</option><option>Alat Kesehatan</option><option>BMHP</option><option>Reagen/Lab</option><option>Lainnya</option></select></div>
+  <div class="tw"><table><thead><tr><th>Kode</th><th>Nama</th><th>Jenis</th><th>Golongan</th><th>Stok</th><th>Kedaluwarsa</th><th>Lokasi</th><th>Aksi</th></tr></thead><tbody id="tb"><tr><td colspan="8" class="empty">Memuat data...</td></tr></tbody></table></div>
+</main>
+
+<div class="ov" id="ov"><div class="mb">
+  <h3>Tambah Perbekes</h3>
+  <div class="f"><label>Nama perbekes</label><input id="pNama" placeholder="Contoh: Paracetamol 500 mg / Masker N95"></div>
+  <div class="g2"><div class="f"><label>Jenis</label><select id="pJenis"><option>Obat</option><option>Alat Kesehatan</option><option>BMHP</option><option>Reagen/Lab</option><option>Lainnya</option></select></div>
+  <div class="f"><label>Golongan</label><select id="pGol"><option>Generik</option><option>Paten</option><option>Perbekes lainnya</option></select></div>
+  <div class="f"><label>Satuan</label><input id="pSat" placeholder="Tablet / Box / Pcs"></div>
+  <div class="f"><label>Lokasi simpan</label><input id="pLok" placeholder="Gudang A"></div>
+  <div class="f"><label>Stok awal</label><input id="pStok" type="number" min="0" value="0"></div>
+  <div class="f"><label>Stok minimum</label><input id="pMin" type="number" min="0" value="10"></div></div>
+  <div class="f"><label>Tanggal kedaluwarsa (ED) – wajib, minimal 3 bulan lagi</label><input id="pEd" type="date"></div>
+  <div class="acts"><button class="btn sec" onclick="tutup()">Batal</button><button class="btn" onclick="simpan()">Simpan</button></div>
+</div></div>
+
+<script>
+const U='https://liaqekfxhbzewgctvach.supabase.co',K='sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
+const db=window.supabase.createClient(U,K),{esc,toast}=SIGAB,$=id=>document.getElementById(id);
+let data=[];
+// Merah: lewat/≤30 hari. Kuning: ≤90 hari. Hijau: aman.
+function warna(ed){if(!ed)return['y','ED belum diisi'];const h=Math.round((new Date(ed)-new Date())/864e5);return[h<=30?'r':h<=90?'y':'g',h<0?'Lewat '+(-h)+' hari':h+' hari lagi']}
+async function muat(){
+  const {data:d,error}=await db.from('perbekes').select('*').order('nama');
+  if(error){$('tb').innerHTML='<tr><td colspan="8" class="empty">Gagal memuat: '+esc(error.message)+'. Pastikan file sigab-update.sql sudah dijalankan di Supabase.</td></tr>';return}
+  data=d||[];tampil();
+}
+function tampil(){
+  const q=$('cari').value.toLowerCase(),j=$('fj').value;
+  const l=data.filter(x=>(!j||x.jenis===j)&&((x.nama||'')+(x.kode||'')).toLowerCase().includes(q));
+  $('tb').innerHTML=l.length?l.map(x=>{const [c,t]=warna(x.kedaluwarsa),low=(x.stok||0)<=(x.min||0);
+    return `<tr><td class="mono">${esc(x.kode)}</td><td><b>${esc(x.nama)}</b></td><td>${esc(x.jenis)}</td><td>${esc(x.golongan||'-')}</td><td style="color:${low?'var(--red)':'inherit'};font-weight:600">${x.stok} ${esc(x.satuan||'')}<span style="color:var(--faint);font-weight:400"> / min ${x.min}</span></td><td><span class="dot ${c}"></span>${t}</td><td>${esc(x.lokasi||'-')}</td><td class="aksi"><button class="del" title="Hapus" onclick="hapus('${x.id}')">🗑</button></td></tr>`}).join(''):'<tr><td colspan="8" class="empty">Belum ada data. Klik "Tambah Perbekes" untuk mulai mengisi.</td></tr>';
+}
+function buka(){['pNama','pSat','pLok','pEd'].forEach(i=>$(i).value='');$('pStok').value=0;$('pMin').value=10;$('ov').classList.add('show')}
+function tutup(){$('ov').classList.remove('show')}
+async function simpan(){
+  const v=id=>$(id).value.trim(),batas=new Date();batas.setDate(batas.getDate()+90);
+  if(!v('pNama')||!v('pSat'))return toast('Nama dan satuan wajib diisi.',1);
+  if(!v('pEd'))return toast('Tanggal kedaluwarsa (ED) wajib diisi.',1);
+  if(new Date(v('pEd'))<batas)return toast('Ditolak: ED kurang dari 3 bulan.',1);
+  const {error}=await db.from('perbekes').insert([{kode:'PBK-'+Math.floor(100000+Math.random()*900000),nama:v('pNama'),jenis:v('pJenis'),golongan:v('pGol'),satuan:v('pSat'),stok:+v('pStok')||0,min:+v('pMin')||0,kedaluwarsa:v('pEd'),lokasi:v('pLok')}]);
+  if(error)return toast('Gagal menyimpan: '+error.message,1);
+  tutup();toast('Perbekes berhasil ditambahkan');muat();
+}
+async function hapus(id){
+  const x=data.find(a=>a.id===id);if(!x||!confirm('Hapus/tarik "'+x.nama+'" dari daftar? Tindakan ini tidak bisa dibatalkan.'))return;
+  const {error}=await db.from('perbekes').delete().eq('id',id);
+  if(error)return toast('Gagal menghapus: '+error.message,1);
+  toast('"'+x.nama+'" dihapus');muat();
+}
+muat();
+</script></body></html>

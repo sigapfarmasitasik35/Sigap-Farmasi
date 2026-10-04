@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<script>try{if(!localStorage.getItem('sigapSesi'))location.href='login.html'}catch(e){location.href='login.html'}</script>
+<title>Sigab-Farma – BAST</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sigab-ui.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="akses.js"></script>
+<style>
+.ir{display:grid;grid-template-columns:2fr 70px 80px 135px 95px 34px;gap:6px;margin-bottom:8px}
+.ir input{background:var(--p2);border:1px solid var(--bd);border-radius:8px;padding:8px;color:var(--tx);font:13px Inter,sans-serif;min-width:0;outline:0}
+.hint{font-size:11.5px;color:var(--faint);margin:-4px 0 10px}
+#cetak{display:none}
+@media print{html,body{height:auto;overflow:visible;display:block;background:#fff}.sb,.main,.ov,.toast{display:none!important}
+#cetak{display:block;color:#000;font:13px/1.5 Arial,sans-serif;padding:18mm}
+#cetak h2{text-align:center;margin-bottom:2px}#cetak p{margin:8px 0}
+#cetak table{min-width:0;width:100%;border-collapse:collapse;margin:10px 0}
+#cetak th,#cetak td{border:1px solid #000;padding:5px 7px;color:#000;background:#fff;position:static;text-transform:none;font-size:12px}
+.ttd{display:flex;justify-content:space-between;margin-top:28px;text-align:center}.ttd div{width:45%}}
+</style></head><body>
+<aside class="sb" id="sb"></aside>
+<main class="main">
+  <div class="ph"><div><h1>BAST – Berita Acara Serah Terima</h1><p>Catat serah terima perbekalan kesehatan, lalu cetak atau simpan sebagai PDF</p></div>
+  <button class="btn" onclick="buka()">+ Buat BAST</button></div>
+  <div class="bar"><input id="cari" placeholder="Cari nomor, pengirim, penerima..." oninput="tampil()"></div>
+  <div class="tw"><table><thead><tr><th>Nomor BAST</th><th>Tanggal</th><th>Dari</th><th>Ke</th><th>Barang</th><th>Aksi</th></tr></thead><tbody id="tb"><tr><td colspan="6" class="empty">Memuat data...</td></tr></tbody></table></div>
+</main>
+
+<div class="ov" id="ov"><div class="mb">
+  <h3>Buat BAST</h3>
+  <div class="g2"><div class="f"><label>Nomor BAST (otomatis)</label><input id="bNomor" readonly></div>
+  <div class="f"><label>Tanggal serah terima</label><input id="bTgl" type="date"></div></div>
+  <div class="f"><label>Sumber barang</label><select id="bSumber"><option>Dinas Kesehatan</option><option>BPBD</option><option>Donasi</option><option>Pembelian</option><option>Lainnya</option></select></div>
+  <div class="g2"><div class="f"><label>Pihak pertama – nama pengirim</label><input id="bPengirim"></div>
+  <div class="f"><label>Instansi pengirim</label><input id="bInsP" list="dlFaskes"></div>
+  <div class="f"><label>Pihak kedua – nama penerima</label><input id="bPenerima"></div>
+  <div class="f"><label>Instansi penerima</label><input id="bInsT" list="dlFaskes"></div></div>
+  <div class="f"><label>Daftar barang: nama, jumlah, satuan, ED (wajib), harga satuan</label><div id="items"></div>
+  <p class="hint">Barang dengan ED kurang dari 3 bulan otomatis ditolak.</p>
+  <button class="btn sec" type="button" onclick="baris()">+ Tambah barang</button></div>
+  <div class="f"><label>Catatan</label><input id="bCatatan" placeholder="Opsional"></div>
+  <div class="acts"><button class="btn sec" onclick="tutup()">Batal</button><button class="btn" onclick="simpan()">Simpan BAST</button></div>
+</div></div>
+<datalist id="dlBarang"></datalist><datalist id="dlFaskes"></datalist>
+<div id="cetak"></div>
+
+<script>
+const U='https://liaqekfxhbzewgctvach.supabase.co',K='sb_publishable_e8fyvAqH8lwfxUAN03MRLQ_dCABlMId';
+const db=window.supabase.createClient(U,K),{esc,toast}=SIGAB,$=id=>document.getElementById(id);
+let data=[];
+const tgl=d=>d?new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'-';
+const rp=n=>n?Number(n).toLocaleString('id-ID'):'-';
+function dl(id,arr){$(id).innerHTML=[...new Set(arr.map(x=>x.nama))].map(n=>'<option value="'+esc(n)+'">').join('')}
+
+async function muat(){
+  const {data:d,error}=await db.from('bast').select('*').order('created_at',{ascending:false});
+  if(error){$('tb').innerHTML='<tr><td colspan="6" class="empty">Gagal memuat: '+esc(error.message)+'. Pastikan file sigab-update.sql sudah dijalankan di Supabase.</td></tr>';return}
+  data=d||[];tampil();
+  const [o,p,f]=await Promise.all(['obat','perbekes','fasilitas'].map(t=>db.from(t).select('nama')));
+  dl('dlBarang',[...(o.data||[]),...(p.data||[])]);dl('dlFaskes',f.data||[]);
+}
+function tampil(){
+  const q=$('cari').value.toLowerCase();
+  const l=data.filter(b=>(b.nomor+b.pengirim+b.penerima).toLowerCase().includes(q));
+  $('tb').innerHTML=l.length?l.map(b=>`<tr><td class="mono">${esc(b.nomor)}</td><td>${tgl(b.tanggal)}</td><td>${esc(b.instansi_pengirim||b.pengirim)}</td><td>${esc(b.instansi_penerima||b.penerima)}</td><td>${(b.items||[]).length} jenis</td><td class="aksi"><button title="Cetak" onclick="cetak('${b.id}')">🖨</button><button class="del" title="Hapus" onclick="hapus('${b.id}')">🗑</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">Belum ada BAST. Klik "Buat BAST" untuk membuat yang pertama.</td></tr>';
+}
+function baris(){
+  const d=document.createElement('div');d.className='ir';
+  d.innerHTML='<input class="n" list="dlBarang" placeholder="Nama barang"><input class="j" type="number" min="1" placeholder="Jml"><input class="s" placeholder="Satuan"><input class="e" type="date" title="Kedaluwarsa"><input class="h" type="number" min="0" placeholder="Harga"><button class="btn sec" type="button" onclick="this.parentNode.remove()">✕</button>';
+  $('items').appendChild(d);
+}
+function buka(){
+  const n=new Date();
+  $('bNomor').value='BAST-'+n.toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.floor(100+Math.random()*900);
+  $('bTgl').value=n.toISOString().slice(0,10);
+  ['bPengirim','bInsP','bPenerima','bInsT','bCatatan'].forEach(i=>$(i).value='');
+  $('items').innerHTML='';baris();$('ov').classList.add('show');
+}
+function tutup(){$('ov').classList.remove('show')}
+async function simpan(){
+  const v=id=>$(id).value.trim(),batas=new Date();batas.setDate(batas.getDate()+90);const items=[];
+  for(const r of document.querySelectorAll('.ir')){
+    const it={nama:r.querySelector('.n').value.trim(),jumlah:+r.querySelector('.j').value||0,satuan:r.querySelector('.s').value.trim(),ed:r.querySelector('.e').value,harga:+r.querySelector('.h').value||0};
+    if(!it.nama&&!it.jumlah)continue;
+    if(!it.nama||it.jumlah<1||!it.ed)return toast('Setiap barang wajib punya nama, jumlah, dan tanggal ED.',1);
+    if(new Date(it.ed)<batas)return toast('"'+it.nama+'" ditolak: ED kurang dari 3 bulan.',1);
+    items.push(it);
+  }
+  if(!v('bPengirim')||!v('bPenerima'))return toast('Nama pengirim dan penerima wajib diisi.',1);
+  if(!items.length)return toast('Isi minimal 1 barang.',1);
+  const {error}=await db.from('bast').insert([{nomor:v('bNomor'),tanggal:v('bTgl')||null,sumber:v('bSumber'),pengirim:v('bPengirim'),instansi_pengirim:v('bInsP'),penerima:v('bPenerima'),instansi_penerima:v('bInsT'),items,catatan:v('bCatatan')}]);
+  if(error)return toast('Gagal menyimpan: '+error.message,1);
+  tutup();toast('BAST berhasil disimpan');muat();
+}
+async function hapus(id){
+  const b=data.find(x=>x.id===id);if(!b||!confirm('Hapus BAST '+b.nomor+'?'))return;
+  const {error}=await db.from('bast').delete().eq('id',id);
+  if(error)return toast('Gagal menghapus: '+error.message,1);
+  toast('BAST dihapus');muat();
+}
+function cetak(id){
+  const b=data.find(x=>x.id===id);if(!b)return;let tot=0;
+  const rows=(b.items||[]).map((x,i)=>{const s=x.jumlah*(x.harga||0);tot+=s;return `<tr><td>${i+1}</td><td>${esc(x.nama)}</td><td>${x.jumlah} ${esc(x.satuan)}</td><td>${tgl(x.ed)}</td><td>${rp(x.harga)}</td><td>${rp(s)}</td></tr>`}).join('');
+  $('cetak').innerHTML=`<h2>BERITA ACARA SERAH TERIMA (BAST)</h2><p style="text-align:center">Nomor: ${esc(b.nomor)}</p><p>Pada tanggal ${tgl(b.tanggal)}, telah dilakukan serah terima perbekalan kesehatan (sumber: ${esc(b.sumber||'-')}) dari <b>${esc(b.pengirim)}</b> (${esc(b.instansi_pengirim||'-')}) kepada <b>${esc(b.penerima)}</b> (${esc(b.instansi_penerima||'-')}), dengan rincian:</p><table><tr><th>No</th><th>Nama Barang</th><th>Jumlah</th><th>ED</th><th>Harga Satuan</th><th>Subtotal</th></tr>${rows}<tr><td colspan="5"><b>Total Nilai</b></td><td><b>${rp(tot)}</b></td></tr></table><p>Catatan: ${esc(b.catatan||'-')}</p><p>Barang diterima dalam kondisi baik dan sesuai jumlah di atas.</p><div class="ttd"><div>Pihak Pertama (Pengirim)<br><br><br><br><br>( ${esc(b.pengirim)} )</div><div>Pihak Kedua (Penerima)<br><br><br><br><br>( ${esc(b.penerima)} )</div></div>`;
+  window.print();
+}
+muat();
+</script></body></html>
